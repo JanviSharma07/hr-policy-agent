@@ -1,0 +1,19 @@
+# Python
+backend/venv/
+__pycache__/
+*.pyc
+
+# Secrets
+.env
+
+# Local data (rebuilt on each machine)
+backend/chroma_db/
+backend/data/uploads/
+
+# Model weights (too big for GitHub)
+backend/models/*.pt
+backend/models/*.bin
+backend/models/*.safetensors
+
+# Frontend
+frontend/node_modules/
