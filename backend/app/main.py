@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.db.database import Base, engine
 from app.db import models  # noqa: F401  (registers the tables)
-from app.routes import auth, documents
+from app.routes import auth, documents, search
 
 Base.metadata.create_all(bind=engine)
 
@@ -18,7 +18,7 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(documents.router)
-
+app.include_router(search.router)
 
 @app.get("/health")
 def health():
