@@ -26,3 +26,4 @@ GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
 GEMINI_FALLBACK_MODELS = [
     m.strip() for m in os.getenv("GEMINI_FALLBACK_MODELS", "").split(",") if m.strip()
 ]
+ROUTER_DIR = BASE_DIR / "models" / "router"   # fine-tuned DistilBERT goes here later
