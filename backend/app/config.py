@@ -21,3 +21,8 @@ TOP_K_RETRIEVE = 20
 TOP_K_FINAL = 5
 MIN_RELEVANCE = 0.05   # floor: if the best result is below this, nothing is relevant
 RELATIVE_KEEP = 0.5    # keep results with at least half the best result's relevance
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
+GEMINI_FALLBACK_MODELS = [
+    m.strip() for m in os.getenv("GEMINI_FALLBACK_MODELS", "").split(",") if m.strip()
+]
