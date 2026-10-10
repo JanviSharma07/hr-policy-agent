@@ -5,11 +5,12 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 from app.config import UPLOAD_DIR
 from app.db.database import get_db
-from app.db.models import Document, User, utcnow
+from app.db.models import Document, User
 from app.auth.dependencies import require_hr_admin
 from app.ingestion.pipeline import prepare_document
-from app.retrieval.embeddings import embed_texts
-from app.retrieval.vector_store import add_chunks, delete_document_chunks, get_document_chunks
+from app.retrieval.vector_store import (
+    add_chunks, delete_document_chunks, get_document_chunks, sync_document_chunks,
+)
 
 router = APIRouter(prefix="/documents", tags=["documents"])
 ALLOWED = {".pdf", ".docx"}
@@ -29,8 +30,10 @@ def _save_upload(file: UploadFile) -> Path:
 def _serialize(d: Document) -> dict:
     return {
         "id": d.id,
+        "family_id": d.family_id,
         "title": d.title,
         "version": d.version,
+        "status": "current" if d.is_active else "archived",
         "chunk_count": d.chunk_count,
         "uploaded_at": d.uploaded_at,
     }
@@ -43,9 +46,25 @@ def _get_or_404(db: Session, document_id: int) -> Document:
     return doc
 
 
+def _ingest(db: Session, doc: Document, path: Path) -> None:
+    """Chunk, embed and store one version. Cleans up after itself if anything fails."""
+    doc_id = doc.id
+    try:
+        ids, texts, metas = prepare_document(path, doc.id, doc.family_id, doc.title, doc.version)
+        add_chunks(ids, texts, metas)
+        doc.chunk_count = len(ids)
+    except Exception as e:
+        db.rollback()
+        delete_document_chunks(doc_id)  # never leave vectors without a registry row
+        path.unlink(missing_ok=True)
+        code = 400 if isinstance(e, ValueError) else 500
+        raise HTTPException(status_code=code, detail=f"Ingestion failed: {e}")
+
+
 @router.get("")
 def list_documents(db: Session = Depends(get_db), admin: User = Depends(require_hr_admin)):
-    docs = db.query(Document).order_by(Document.uploaded_at.desc()).all()
+    docs = (db.query(Document)
+            .order_by(Document.family_id, Document.uploaded_at.desc()).all())
     return [_serialize(d) for d in docs]
 
 
@@ -58,23 +77,14 @@ def upload_document(
     admin: User = Depends(require_hr_admin),
 ):
     path = _save_upload(file)
-    doc = Document(title=title, filename=path.name, version=version, uploaded_by=admin.id)
+    doc = Document(title=title, filename=path.name, version=version,
+                   uploaded_by=admin.id, is_active=True)
     db.add(doc)
-    db.flush()  # gives us doc.id without saving yet
-    doc_id = doc.id
+    db.flush()               # gives us doc.id without saving yet
+    doc.family_id = doc.id   # a new policy starts its own family
 
-    try:
-        ids, texts, metas = prepare_document(path, doc_id, title, version)
-        add_chunks(ids, texts, metas)
-        doc.chunk_count = len(ids)
-        db.commit()
-    except Exception as e:
-        db.rollback()
-        delete_document_chunks(doc_id)  # never leave vectors without a registry row
-        path.unlink(missing_ok=True)
-        code = 400 if isinstance(e, ValueError) else 500
-        raise HTTPException(status_code=code, detail=f"Ingestion failed: {e}")
-
+    _ingest(db, doc, path)
+    db.commit()
     db.refresh(doc)
     return _serialize(doc)
 
@@ -87,29 +97,31 @@ def replace_document(
     db: Session = Depends(get_db),
     admin: User = Depends(require_hr_admin),
 ):
-    doc = _get_or_404(db, document_id)
-    new_path = _save_upload(file)
+    """Upload a new version. The old version is archived, not deleted,
+    so the comparison agent can still read it."""
+    old = _get_or_404(db, document_id)
+    if not old.is_active:
+        raise HTTPException(status_code=400, detail="This version is archived. Replace the current version instead.")
+    taken = {d.version for d in db.query(Document).filter(Document.family_id == old.family_id)}
+    if version in taken:
+        raise HTTPException(status_code=400, detail=f"Version {version} already exists for this policy")
 
-    # Prepare and embed the new version BEFORE touching the old one,
-    # so a failure here leaves the old policy fully intact.
-    try:
-        ids, texts, metas = prepare_document(new_path, doc.id, doc.title, version)
-        vectors = embed_texts(texts)
-    except Exception as e:
-        new_path.unlink(missing_ok=True)
-        raise HTTPException(status_code=400, detail=f"Ingestion failed: {e}")
+    path = _save_upload(file)
+    new = Document(title=old.title, filename=path.name, version=version,
+                   uploaded_by=admin.id, family_id=old.family_id, is_active=True)
+    db.add(new)
+    db.flush()
 
-    delete_document_chunks(doc.id)
-    add_chunks(ids, texts, metas, embeddings=vectors)
-
-    old_path = UPLOAD_DIR / doc.filename
-    doc.filename, doc.version = new_path.name, version
-    doc.chunk_count, doc.uploaded_at = len(ids), utcnow()
+    _ingest(db, new, path)
+    old.is_active = False
     db.commit()
-    old_path.unlink(missing_ok=True)
 
-    db.refresh(doc)
-    return _serialize(doc)
+    # Mark the old version's chunks as archived so normal search skips them.
+    # (If this ever fails, the startup sync in main.py repairs it.)
+    sync_document_chunks(old.id, old.family_id, False)
+
+    db.refresh(new)
+    return _serialize(new)
 
 
 @router.delete("/{document_id}")
@@ -118,17 +130,22 @@ def delete_document(
     db: Session = Depends(get_db),
     admin: User = Depends(require_hr_admin),
 ):
+    """Deletes the whole policy: every version, its chunks and its files."""
     doc = _get_or_404(db, document_id)
+    versions = db.query(Document).filter(Document.family_id == doc.family_id).all()
 
-    # Vectors first. If this fails, the row survives and HR can retry,
+    # Vectors first. If this fails, the rows survive and HR can retry,
     # so the system can never answer from a policy that "doesn't exist".
-    delete_document_chunks(doc.id)
+    for v in versions:
+        delete_document_chunks(v.id)
 
-    path = UPLOAD_DIR / doc.filename
-    db.delete(doc)
+    paths = [UPLOAD_DIR / v.filename for v in versions]
+    for v in versions:
+        db.delete(v)
     db.commit()
-    path.unlink(missing_ok=True)
-    return {"deleted": document_id}
+    for p in paths:
+        p.unlink(missing_ok=True)
+    return {"deleted_versions": [v.id for v in versions]}
 
 
 @router.get("/{document_id}/chunks")

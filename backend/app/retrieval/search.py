@@ -9,8 +9,9 @@ def search(
     top_k: int = TOP_K_FINAL,
     use_reranker: bool = True,
     min_relevance: float = MIN_RELEVANCE,
+    include_archived: bool = False,
 ) -> list[dict]:
-    candidates = query_chunks(embed_query(question), TOP_K_RETRIEVE)
+    candidates = query_chunks(embed_query(question), TOP_K_RETRIEVE, include_archived=include_archived)
     if not use_reranker:
         return candidates[:top_k]
 
@@ -30,6 +31,7 @@ def to_citation(result: dict) -> dict:
         "document_id": m["document_id"],
         "title": m["title"],
         "version": m["version"],
+        "status": "current" if m.get("is_active", True) else "archived",
         "section": m["section"],
         "page": m.get("page"),  # None for DOCX files
     }

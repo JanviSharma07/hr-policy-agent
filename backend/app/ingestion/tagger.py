@@ -1,4 +1,4 @@
-def tag_chunks(chunks: list[dict], document_id: int, title: str, version: str):
+def tag_chunks(chunks: list[dict], document_id: int, family_id: int, title: str, version: str):
     ids, texts, metadatas = [], [], []
     for i, chunk in enumerate(chunks):
         ids.append(f"doc{document_id}_chunk{i}")
@@ -6,6 +6,8 @@ def tag_chunks(chunks: list[dict], document_id: int, title: str, version: str):
         texts.append(f"{chunk['section']}\n{chunk['text']}")
         meta = {
             "document_id": document_id,
+            "family_id": family_id,      # same for every version of this policy
+            "is_active": True,           # set to False when a newer version replaces it
             "title": title,
             "version": version,
             "section": chunk["section"],
