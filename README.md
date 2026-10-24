@@ -23,8 +23,6 @@ Instead of manually searching lengthy policy documents, users will be able to as
 * [Frontend Setup](#-frontend-setup)
 * [API Documentation](#-api-documentation)
 * [Security Considerations](#-security-considerations)
-* [Current Status and Future Enhancements](#-current-status-and-future-enhancements)
-* [Author](#-author)
 
 ---
 
@@ -395,42 +393,5 @@ The presence of authentication or other security-related modules does not, by it
 
 ---
 
-## 📈 Current Status and Future Enhancements
-
-### Current Development Status
-
-* [x] React frontend structure and main interface.
-* [x] Responsive frontend styling.
-* [x] Interactive chat interface with demo responses.
-* [x] Policy Library interface.
-* [x] My Activity interface.
-* [x] Frontend API service structure.
-* [ ] Complete frontend-to-backend integration.
-* [ ] End-to-end testing of AI-powered policy retrieval.
-* [ ] Validation of answers against indexed HR policy documents.
-* [ ] Comprehensive application testing.
-
-### Planned Enhancements
-
-* Connect the frontend chat interface to the live backend.
-* Complete HR policy document ingestion and indexing.
-* Improve semantic retrieval and answer relevance.
-* Display supporting policy sources with AI-generated answers.
-* Validate authentication and database operations.
-* Add automated tests for important API and retrieval workflows.
-* Improve error handling and loading states.
-* Prepare the application for deployment.
-
----
-
-## 👩‍💻 Author
-
-**Khushi Kumari**
-
-GitHub: [@khushi1911](https://github.com/khushi1911)
-
-Project Repository: [HUMANLY — HR Policy Intelligence Agent](https://github.com/khushi1911/hr-policy-agent)
-
----
 
 *HUMANLY is an evolving project focused on making HR policy information easier to access through conversational AI and semantic retrieval.*
