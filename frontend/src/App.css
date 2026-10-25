@@ -2026,3 +2026,62 @@ button:disabled {
 .activity-item-copy {
   text-align: left;
 }
+
+/* HR page: headings visible in Windows dark mode, inline messages */
+
+.activity-list-heading h2,
+.panel-title {
+  margin: 0;
+  color: #2c3a30;
+  font-family: 'Manrope', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+
+.panel-title {
+  margin-bottom: 16px;
+  font-size: 14px;
+  text-align: left;
+}
+
+.notice {
+  margin: 12px 0 0;
+  padding: 9px 12px;
+  border: 1px solid #e0e7df;
+  border-radius: 9px;
+  color: #55635a;
+  background: #f7faf7;
+  font-size: 12px;
+  line-height: 1.6;
+  text-align: left;
+}
+
+.notice-success {
+  border-color: #cfe3d4;
+  color: #2f6b45;
+  background: #edf6ef;
+}
+
+.notice-error {
+  border-color: #f1d4cf;
+  color: #9a3b2c;
+  background: #fdf3f1;
+}
+
+.doc-card .notice {
+  margin-top: 6px;
+}
+
+.activity-item-copy .doc-archived {
+  margin: 4px 0 0;
+  color: #8a6a2c;
+}
+
+.replace-label {
+  width: 100%;
+  color: #5d6a60;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: left;
+}

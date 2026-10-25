@@ -317,8 +317,9 @@ function ProfilePage({ user, onSaved, onLogout }) {
 function ManagePoliciesPage({ onAuthError }) {
   const [documents, setDocuments] = useState([])
   const [loading, setLoading] = useState(true)
-  const [status, setStatus] = useState('')
   const [busy, setBusy] = useState(false)
+  // Shown right where the action happened: { where: 'upload' | <document id>, kind, text }
+  const [notice, setNotice] = useState(null)
   const [upload, setUpload] = useState({ title: '', version: '', file: null })
   const [replacing, setReplacing] = useState(null) // { id, version, file }
   const fileInputRef = useRef(null)
@@ -328,7 +329,7 @@ function ManagePoliciesPage({ onAuthError }) {
       setDocuments(await documentsAPI.getAll())
     } catch (err) {
       if (err.status === 401) onAuthError()
-      setStatus(err.message)
+      setNotice({ where: 'upload', kind: 'error', text: err.message })
     } finally {
       setLoading(false)
     }
@@ -338,46 +339,55 @@ function ManagePoliciesPage({ onAuthError }) {
     load()
   }, [load])
 
-  async function run(action, message) {
+  async function run(where, working, done, action) {
     setBusy(true)
-    setStatus(message)
+    setNotice({ where, kind: 'info', text: working })
     try {
-      await action()
-      setStatus('Done ✓')
+      const result = await action()
+      // an action can move the message, e.g. a replace creates a new card id
+      setNotice({ where: result?.where ?? where, kind: 'success', text: done })
       await load()
     } catch (err) {
       if (err.status === 401) onAuthError()
-      setStatus(err.message)
+      setNotice({ where, kind: 'error', text: err.message })
     } finally {
       setBusy(false)
     }
   }
 
+  function Notice({ where }) {
+    if (!notice || notice.where !== where) return null
+    return <p className={`notice notice-${notice.kind}`} role="status">{notice.text}</p>
+  }
+
   function handleUpload(event) {
     event.preventDefault()
     if (!upload.file) return
-    run(async () => {
-      await documentsAPI.upload(upload)
+    const title = upload.title.trim()
+    run('upload', 'Uploading and indexing… (the first upload can take a minute)', `"${title}" uploaded ✓`, async () => {
+      await documentsAPI.upload({ ...upload, title, version: upload.version.trim() })
       setUpload({ title: '', version: '', file: null })
       if (fileInputRef.current) fileInputRef.current.value = ''
-    }, 'Uploading and indexing… (the first upload can take a minute)')
+    })
   }
 
-  function handleReplace(event) {
+  function handleReplace(event, doc) {
     event.preventDefault()
     if (!replacing?.file) return
-    run(async () => {
-      await documentsAPI.replace(replacing.id, replacing.version, replacing.file)
+    const version = replacing.version.trim()
+    run(doc.id, `Uploading version ${version}…`, `Version ${version} is now current ✓`, async () => {
+      const created = await documentsAPI.replace(replacing.id, version, replacing.file)
       setReplacing(null)
-    }, 'Uploading the new version…')
+      return { where: created.id } // the new version has a new id: show the message on its card
+    })
   }
 
   function handleDelete(doc) {
     if (!window.confirm(`Delete "${doc.title}" and all its versions? Employees will no longer get answers from it.`)) return
-    run(() => documentsAPI.delete(doc.id), 'Deleting…')
+    run('upload', 'Deleting…', `"${doc.title}" deleted ✓`, () => documentsAPI.delete(doc.id))
   }
 
-  // One card per policy: the current version, with archived versions underneath
+  // One card per policy: the current version, with older versions underneath
   const families = Object.values(
     documents.reduce((groups, doc) => {
       const key = doc.family_id ?? doc.id
@@ -393,10 +403,11 @@ function ManagePoliciesPage({ onAuthError }) {
       <div className="page-heading">
         <span className="welcome-eyebrow">HR ADMIN</span>
         <h1>Manage policies</h1>
-        <p>Upload PDF or Word policies. Replacing a policy keeps the old version as archived, so employees can ask what changed.</p>
+        <p>Upload PDF or Word policies. To update a policy, use Replace: the old version is kept so employees can ask what changed.</p>
       </div>
 
       <form className="panel-card upload-form" onSubmit={handleUpload}>
+        <h2 className="panel-title">Upload a new policy</h2>
         <div className="form-row">
           <label className="form-field">
             <span>Policy title</span>
@@ -413,8 +424,8 @@ function ManagePoliciesPage({ onAuthError }) {
         </div>
         <div className="panel-actions">
           <button className="return-button" type="submit" disabled={busy}>Upload policy</button>
-          <span className="form-hint">{status}</span>
         </div>
+        <Notice where="upload" />
       </form>
 
       <div className="activity-list">
@@ -439,10 +450,20 @@ function ManagePoliciesPage({ onAuthError }) {
                 <div className="activity-item-copy">
                   <h3>{current.title}</h3>
                   <p>
-                    Version {current.version} · {current.chunk_count} sections · uploaded {formatDate(current.uploaded_at)}
+                    Current version {current.version} · {current.chunk_count} sections · uploaded {formatDate(current.uploaded_at)}
                   </p>
+                  {archived.length > 0 && (
+                    <p className="doc-archived">
+                      Older version{archived.length > 1 ? 's' : ''} kept for comparison:{' '}
+                      {archived.map((doc) => `v${doc.version}`).join(', ')}
+                    </p>
+                  )}
                 </div>
-                <button className="activity-open-button" disabled={busy} onClick={() => setReplacing({ id: current.id, version: '', file: null })}>
+                <button
+                  className="activity-open-button"
+                  disabled={busy}
+                  onClick={() => { setReplacing({ id: current.id, version: '', file: null }); setNotice(null) }}
+                >
                   Replace
                 </button>
                 <button className="activity-open-button danger-button" disabled={busy} onClick={() => handleDelete(current)}>
@@ -451,19 +472,15 @@ function ManagePoliciesPage({ onAuthError }) {
               </div>
 
               {replacing?.id === current.id && (
-                <form className="replace-form" onSubmit={handleReplace}>
+                <form className="replace-form" onSubmit={(event) => handleReplace(event, current)}>
+                  <span className="replace-label">Upload a newer version of {current.title}:</span>
                   <input required value={replacing.version} onChange={(e) => setReplacing({ ...replacing, version: e.target.value })} placeholder="New version, e.g. 2027" />
                   <input required type="file" accept=".pdf,.docx" onChange={(e) => setReplacing({ ...replacing, file: e.target.files[0] || null })} />
                   <button className="return-button" type="submit" disabled={busy}>Upload version</button>
-                  <button className="ghost-button" type="button" onClick={() => setReplacing(null)}>Cancel</button>
+                  <button className="ghost-button" type="button" onClick={() => { setReplacing(null); setNotice(null) }}>Cancel</button>
                 </form>
               )}
-
-              {archived.length > 0 && (
-                <p className="doc-archived">
-                  Archived: {archived.map((doc) => `v${doc.version}`).join(', ')}
-                </p>
-              )}
+              <Notice where={current.id} />
             </div>
           ))
         )}

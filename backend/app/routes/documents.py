@@ -2,6 +2,7 @@ import shutil
 from pathlib import Path
 from uuid import uuid4
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from app.config import UPLOAD_DIR
 from app.db.database import get_db
@@ -76,6 +77,19 @@ def upload_document(
     db: Session = Depends(get_db),
     admin: User = Depends(require_hr_admin),
 ):
+    title, version = title.strip(), version.strip()
+    if not title or not version:
+        raise HTTPException(status_code=400, detail="Title and version cannot be empty")
+    existing = (db.query(Document)
+                .filter(func.lower(Document.title) == title.lower(), Document.is_active.is_(True))
+                .first())
+    if existing:
+        raise HTTPException(
+            status_code=400,
+            detail=f'A policy called "{existing.title}" already exists (version {existing.version}). '
+                   f'Use Replace on it to upload a newer version.',
+        )
+
     path = _save_upload(file)
     doc = Document(title=title, filename=path.name, version=version,
                    uploaded_by=admin.id, is_active=True)
@@ -99,6 +113,9 @@ def replace_document(
 ):
     """Upload a new version. The old version is archived, not deleted,
     so the comparison agent can still read it."""
+    version = version.strip()
+    if not version:
+        raise HTTPException(status_code=400, detail="Version cannot be empty")
     old = _get_or_404(db, document_id)
     if not old.is_active:
         raise HTTPException(status_code=400, detail="This version is archived. Replace the current version instead.")
