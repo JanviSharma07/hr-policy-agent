@@ -49,10 +49,62 @@ async function apiRequest(endpoint, options = {}) {
         ? data.detail || data.message
         : data;
 
-    throw new Error(message || `Request failed: ${response.status}`);
+    const error = new Error(message || `Request failed: ${response.status}`);
+    error.status = response.status; // lets the UI log out on 401
+    throw error;
   }
 
   return data;
+}
+
+// Reads the Server-Sent Events from POST /chat/stream.
+// Calls onStep(text) for every agent step, then resolves with the final answer.
+async function streamChat(question, conversationId, onStep) {
+  const token = localStorage.getItem(TOKEN_KEY);
+
+  const response = await fetch(`${API_BASE_URL}/chat/stream`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify({ question, conversation_id: conversationId }),
+  });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    const error = new Error(data.detail || `Request failed: ${response.status}`);
+    error.status = response.status;
+    throw error;
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let result = null;
+
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const events = buffer.split("\n\n");
+    buffer = events.pop(); // keep any half-received event
+
+    for (const raw of events) {
+      const event = raw.match(/^event: (.*)$/m)?.[1];
+      const dataLine = raw.match(/^data: (.*)$/m)?.[1];
+      if (!event || !dataLine) continue;
+
+      const data = JSON.parse(dataLine);
+      if (event === "step") onStep?.(data.text);
+      if (event === "done") result = data;
+      if (event === "error") throw new Error(data.detail);
+    }
+  }
+
+  if (!result) throw new Error("The answer stream ended unexpectedly");
+  return result;
 }
 
 // Authentication
@@ -96,6 +148,10 @@ export const authAPI = {
   logout() {
     localStorage.removeItem(TOKEN_KEY);
   },
+
+  hasToken() {
+    return Boolean(localStorage.getItem(TOKEN_KEY));
+  },
 };
 
 // Chat and conversation history
@@ -110,6 +166,11 @@ export const chatAPI = {
     });
   },
 
+  // Same as sendMessage, but reports each agent step live
+  streamMessage(question, conversationId = null, onStep) {
+    return streamChat(question, conversationId, onStep);
+  },
+
   getConversations() {
     return apiRequest("/chat/conversations");
   },
@@ -122,6 +183,13 @@ export const chatAPI = {
     return apiRequest(`/chat/conversations/${conversationId}`, {
       method: "DELETE",
     });
+  },
+};
+
+// Backend status
+export const systemAPI = {
+  health() {
+    return apiRequest("/health");
   },
 };
 

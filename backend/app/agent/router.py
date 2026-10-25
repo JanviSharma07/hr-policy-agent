@@ -22,6 +22,6 @@ def classify(question: str) -> tuple[str, str]:
         intent = model(question)[0]["label"]
         source = "DistilBERT"
     else:
-        intent = generate_json(ROUTER_SYSTEM, question).get("intent", "")
+        intent = generate_json(ROUTER_SYSTEM, question, fast=True, label="router").get("intent", "")
         source = "Gemini placeholder"
     return (intent if intent in INTENTS else "policy_qa"), source

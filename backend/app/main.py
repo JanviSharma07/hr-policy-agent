@@ -13,6 +13,12 @@ with SessionLocal() as db:
     for doc in db.query(models.Document).all():
         sync_document_chunks(doc.id, doc.family_id, doc.is_active)
 
+# Load the embedding and reranker models now, so the first question isn't slow
+from app.retrieval.embeddings import get_model  # noqa: E402
+from app.retrieval.reranker import get_reranker  # noqa: E402
+get_model()
+get_reranker()
+
 app = FastAPI(title="HR Policy Intelligence Agent")
 
 app.add_middleware(

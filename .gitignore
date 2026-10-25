@@ -17,3 +17,5 @@ backend/models/*.safetensors
 
 # Frontend
 frontend/node_modules/
+*.dump
+*.zip

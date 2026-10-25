@@ -23,6 +23,7 @@ MIN_RELEVANCE = 0.05   # floor: if the best result is below this, nothing is rel
 RELATIVE_KEEP = 0.5    # keep results with at least half the best result's relevance
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
+GEMINI_FAST_MODEL = os.getenv("GEMINI_FAST_MODEL", "gemini-3.5-flash-lite")  # routing and rewriting
 GEMINI_FALLBACK_MODELS = [
     m.strip() for m in os.getenv("GEMINI_FALLBACK_MODELS", "").split(",") if m.strip()
 ]

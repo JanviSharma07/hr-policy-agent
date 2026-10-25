@@ -79,7 +79,7 @@ def memory(state: AgentState) -> dict:
     if not history:
         return {"standalone": state["question"]}
     convo = "\n".join(f"{m['sender']}: {m['content']}" for m in history[-HISTORY_MESSAGES:])
-    out = generate_json(MEMORY_SYSTEM, f"Conversation so far:\n{convo}\n\nLatest message: {state['question']}")
+    out = generate_json(MEMORY_SYSTEM, f"Conversation so far:\n{convo}\n\nLatest message: {state['question']}", fast=True, label="memory")
     standalone = str(out.get("question", "")).strip() or state["question"]
     if standalone.strip().lower() == state["question"].strip().lower():
         return {"standalone": state["question"]}
@@ -135,7 +135,7 @@ def after_retrieve(state: AgentState) -> str:
 
 
 def rewrite(state: AgentState) -> dict:
-    out = generate_json(REWRITE_SYSTEM, _q(state))
+    out = generate_json(REWRITE_SYSTEM, _q(state), fast=True, label="rewrite")
     query = str(out.get("query", "")).strip() or _q(state)
     return {"search_query": query, "retries": state.get("retries", 0) + 1,
             "trace": [f'No match, so the question was rewritten: "{query}"']}
@@ -148,7 +148,7 @@ def not_covered(state: AgentState) -> dict:
 
 
 def policy_qa(state: AgentState) -> dict:
-    out = generate_json(QA_SYSTEM, _excerpt_prompt(state))
+    out = generate_json(QA_SYSTEM, _excerpt_prompt(state), label="policy_qa")
     return {
         "answer": str(out.get("answer", "")).strip(),
         "used": out.get("sources", []),
@@ -157,7 +157,7 @@ def policy_qa(state: AgentState) -> dict:
 
 
 def calculator(state: AgentState) -> dict:
-    out = generate_json(CALC_SYSTEM, _excerpt_prompt(state, with_profile=True))
+    out = generate_json(CALC_SYSTEM, _excerpt_prompt(state, with_profile=True), label="calculator")
     sources = out.get("sources", [])
 
     if str(out.get("missing", "")).strip():
@@ -187,7 +187,7 @@ def calculator(state: AgentState) -> dict:
 
 
 def eligibility(state: AgentState) -> dict:
-    out = generate_json(ELIGIBILITY_SYSTEM, _excerpt_prompt(state, with_profile=True))
+    out = generate_json(ELIGIBILITY_SYSTEM, _excerpt_prompt(state, with_profile=True), label="eligibility")
     verdict = str(out.get("verdict", "")).strip()
     result = {"answer": str(out.get("answer", "")).strip(), "used": out.get("sources", []),
               "trace": [f"Eligibility agent checked your profile: {verdict or 'no verdict'}"]}
@@ -203,13 +203,13 @@ def comparison(state: AgentState) -> dict:
         return {"answer": f"Only one version of the {title} is on file (version {next(iter(versions))}), "
                           f"so there is nothing to compare yet.",
                 "used": [1], "trace": ["Comparison agent: only one version exists"]}
-    out = generate_json(COMPARE_SYSTEM, _excerpt_prompt(state))
+    out = generate_json(COMPARE_SYSTEM, _excerpt_prompt(state), label="comparison")
     return {"answer": str(out.get("answer", "")).strip(), "used": out.get("sources", []),
             "trace": [f"Comparison agent compared versions {', '.join(sorted(versions))}"]}
 
 
 def summarizer(state: AgentState) -> dict:
-    out = generate_json(SUMMARY_SYSTEM, _excerpt_prompt(state))
+    out = generate_json(SUMMARY_SYSTEM, _excerpt_prompt(state), label="summarizer")
     return {"answer": str(out.get("answer", "")).strip(), "used": out.get("sources", []),
             "trace": ["Summarizer agent summarised the policy"]}
 
