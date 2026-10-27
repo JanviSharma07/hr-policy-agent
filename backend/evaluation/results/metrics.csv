@@ -1,0 +1,10 @@
+setup,subset,questions,recall@1,recall@5,mrr
+Keyword (TF-IDF),all,60,0.783,0.933,0.842
+Keyword (TF-IDF),keyword,29,0.931,1.0,0.96
+Keyword (TF-IDF),paraphrase,31,0.645,0.871,0.731
+Embeddings only,all,60,0.933,0.983,0.951
+Embeddings only,keyword,29,1.0,1.0,1.0
+Embeddings only,paraphrase,31,0.871,0.968,0.904
+Embeddings + pretrained reranker,all,60,0.917,1.0,0.953
+Embeddings + pretrained reranker,keyword,29,1.0,1.0,1.0
+Embeddings + pretrained reranker,paraphrase,31,0.839,1.0,0.909

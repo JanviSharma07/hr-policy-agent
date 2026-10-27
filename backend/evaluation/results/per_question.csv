@@ -1,0 +1,61 @@
+id,question,type,correct,Keyword (TF-IDF),Embeddings only,Embeddings + pretrained reranker
+1,How many casual leaves do I get in a year?,keyword,Leave Policy / 3. Casual Leave,1,1,1
+2,Can I take four casual leaves in a row?,paraphrase,Leave Policy / 3. Casual Leave,1,1,1
+3,What happens to my unused casual leave at the end of the year?,keyword,Leave Policy / 3. Casual Leave,1,1,1
+4,How many days of sick leave am I entitled to?,keyword,Leave Policy / 4. Sick Leave,1,1,1
+5,"I was unwell for three days, do I need a doctor's note?",paraphrase,Leave Policy / 4. Sick Leave,3,1,1
+6,How many sick days can I carry over to next year?,paraphrase,Leave Policy / 4. Sick Leave,1,1,1
+7,How much earned leave do I build up each month?,paraphrase,Leave Policy / 2. Leave Year and Accrual,1,3,1
+8,When does the leave year start and end?,keyword,Leave Policy / 2. Leave Year and Accrual,1,1,1
+9,"I joined in the middle of the year, how is my leave worked out?",paraphrase,Leave Policy / 2. Leave Year and Accrual,1,1,1
+10,After how many months of service can I use earned leave?,keyword,Leave Policy / 5. Earned Leave,1,1,1
+11,How far in advance must I apply for earned leave?,keyword,Leave Policy / 5. Earned Leave,1,1,1
+12,What is the maximum earned leave I can carry forward?,keyword,Leave Policy / 5. Earned Leave,2,1,1
+13,Can I get paid for my unused leave when I quit?,paraphrase,Leave Policy / 6. Leave Encashment,4,1,1
+14,How is leave encashment calculated?,keyword,Leave Policy / 6. Leave Encashment,1,1,1
+15,How long is maternity leave for the first child?,keyword,Leave Policy / 7. Maternity Leave,1,1,1
+16,"I am adopting a baby, how much time off do I get?",paraphrase,Leave Policy / 7. Maternity Leave,,1,1
+17,How many days off do new fathers get?,paraphrase,Leave Policy / 8. Paternity Leave,,1,2
+18,"A close family member passed away, how many days off can I take?",paraphrase,Leave Policy / 9. Bereavement Leave,1,1,1
+19,Who approves my leave request and how quickly?,paraphrase,Leave Policy / 10. Applying for Leave,1,1,1
+20,What should I do if I suddenly can't come to work today?,paraphrase,Leave Policy / 10. Applying for Leave,,2,2
+21,Do interns get leave under this policy?,paraphrase,Leave Policy / 1. Purpose and Scope,1,1,1
+22,Do I need permission before going on an official trip?,paraphrase,Travel Policy / 2. Travel Approval,3,1,1
+23,Who has to approve international travel?,keyword,Travel Policy / 2. Travel Approval,1,1,1
+24,Which train class can L2 employees book?,keyword,Travel Policy / 3. Mode of Travel,1,1,1
+25,Can senior employees fly business class?,paraphrase,Travel Policy / 3. Mode of Travel,1,1,1
+26,How much do I get per km if I use my car?,paraphrase,Travel Policy / 4. Own Vehicle Mileage,1,1,1
+27,How much do I get per kilometre on my bike?,paraphrase,Travel Policy / 4. Own Vehicle Mileage,1,1,1
+28,Are tolls and parking charges reimbursed?,keyword,Travel Policy / 4. Own Vehicle Mileage,1,1,1
+29,What proof do I need for the distance I drove?,paraphrase,Travel Policy / 4. Own Vehicle Mileage,2,1,1
+30,What is the daily allowance in metro cities?,keyword,Travel Policy / 5. Daily Allowance,1,1,1
+31,How much money do I get for meals when travelling to a small town?,paraphrase,Travel Policy / 5. Daily Allowance,1,1,1
+32,What daily allowance do I get for a travel day of less than 12 hours?,keyword,Travel Policy / 5. Daily Allowance,1,1,1
+33,What is the most I can spend on a hotel per night in Mumbai?,paraphrase,Travel Policy / 6. Hotel Accommodation,1,1,1
+34,Do I need to claim hotel stays booked through the travel desk?,keyword,Travel Policy / 6. Hotel Accommodation,1,1,1
+35,What is the deadline to submit a travel claim?,keyword,Travel Policy / 7. Claim Submission,1,1,1
+36,Which bills do I need to attach to my expense claim?,paraphrase,Travel Policy / 7. Claim Submission,1,1,1
+37,When will my approved claim be paid?,keyword,Travel Policy / 7. Claim Submission,1,1,1
+38,Can I claim the drinks I bought during a business trip?,paraphrase,Travel Policy / 8. Non-Reimbursable Expenses,4,5,2
+39,Will the company pay if my family travels with me?,paraphrase,Travel Policy / 8. Non-Reimbursable Expenses,1,,3
+40,Who is eligible to work from home?,keyword,WFH Policy / 2. Eligibility,1,1,1
+41,Can lab staff work remotely?,paraphrase,WFH Policy / 2. Eligibility,1,1,1
+42,How many days a week can I work from home?,keyword,WFH Policy / 3. Number of WFH Days,1,1,1
+43,Which days do I have to come into the office?,paraphrase,WFH Policy / 3. Number of WFH Days,1,1,1
+44,How do I get my remote working days approved?,paraphrase,WFH Policy / 4. Approval Process,1,1,1
+45,How much notice is needed for an ad-hoc WFH day?,keyword,WFH Policy / 4. Approval Process,1,1,1
+46,Is there a home office setup allowance?,keyword,WFH Policy / 5. Home Office Allowance,1,1,1
+47,Does the company pay for my internet at home?,paraphrase,WFH Policy / 5. Home Office Allowance,2,1,1
+48,What hours must I be online when working from home?,paraphrase,WFH Policy / 6. Availability and Conduct,2,1,1
+49,Do I have to use the company VPN at home?,keyword,WFH Policy / 6. Availability and Conduct,1,1,1
+50,Must I switch my camera on in meetings when working remotely?,paraphrase,WFH Policy / 6. Availability and Conduct,1,1,1
+51,How many fixed public holidays does the company observe?,keyword,Holiday Policy / 2. Public Holidays,1,1,1
+52,Is Independence Day a holiday?,keyword,Holiday Policy / 2. Public Holidays,3,1,1
+53,When is next year's list of holidays published?,paraphrase,Holiday Policy / 2. Public Holidays,1,1,1
+54,How many optional holidays can I choose?,keyword,Holiday Policy / 3. Optional Holidays,1,1,1
+55,How early must I apply for an optional holiday?,keyword,Holiday Policy / 3. Optional Holidays,1,1,1
+56,Can I carry forward unused optional holidays?,keyword,Holiday Policy / 3. Optional Holidays,1,1,1
+57,What do I get if my manager asks me to work on a festival day off?,paraphrase,Holiday Policy / 4. Working on a Holiday,1,1,1
+58,How long do I have to use a compensatory off?,keyword,Holiday Policy / 4. Working on a Holiday,1,1,1
+59,If a public holiday falls during my earned leave is it counted as leave?,keyword,Holiday Policy / 5. Holidays During Leave,1,1,1
+60,Does a festival in the middle of my sick days reduce my leave balance?,paraphrase,Holiday Policy / 5. Holidays During Leave,,1,3
