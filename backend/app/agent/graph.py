@@ -6,7 +6,7 @@ from langgraph.graph import StateGraph, START, END
 from app.config import AGENT_RELATIVE_KEEP, OUT_OF_SCOPE_OVERRIDE
 from app.retrieval.search import search, to_citation
 from app.retrieval.vector_store import get_family_chunks
-from app.agent.llm import generate_json
+from app.agent.llm import generate_json, GeminiUnavailable
 from app.agent.prompts import (
     QA_SYSTEM, CALC_SYSTEM, ELIGIBILITY_SYSTEM,
     COMPARE_SYSTEM, SUMMARY_SYSTEM, NOT_COVERED,
@@ -348,17 +348,40 @@ def _result(state: dict) -> dict:
 
 
 def run_agent(question: str, profile: dict | None = None, history: list[dict] | None = None) -> dict:
-    return _result(agent.invoke(_initial_state(question, profile, history)))
+    result = None
+    for kind, payload in stream_agent(question, profile, history):
+        if kind == "done":
+            result = payload
+    return result
+
+
+def _quote_policy(state: dict) -> dict:
+    """Gemini is unreachable: show the best matching policy text instead of an error."""
+    chunks = state.get("chunks") or []
+    trace = state.get("trace", []) + ["Gemini unavailable, so the most relevant policy text is shown instead"]
+    if not chunks:
+        return {"intent": state.get("intent"), "answer": NOT_COVERED, "citations": [], "trace": trace}
+    top = chunks[0]
+    text = top["text"] if len(top["text"]) <= 700 else top["text"][:700].rsplit(" ", 1)[0] + "..."
+    answer = ("The AI service is busy right now, so here is the policy section that best matches "
+              f"your question:\n\n{text}")
+    return {"intent": state.get("intent"), "answer": answer,
+            "citations": [{**to_citation(top), "text": top["text"]}], "trace": trace}
 
 
 def stream_agent(question: str, profile: dict | None = None,
                  history: list[dict] | None = None) -> Iterator[tuple[str, object]]:
     """Yields ("step", text) as each agent finishes, then ("done", result)."""
     seen, final = 0, None
-    for state in agent.stream(_initial_state(question, profile, history), stream_mode="values"):
-        trace = state.get("trace", [])
-        for line in trace[seen:]:
-            yield "step", line
-        seen = len(trace)
-        final = state
+    try:
+        for state in agent.stream(_initial_state(question, profile, history), stream_mode="values"):
+            trace = state.get("trace", [])
+            for line in trace[seen:]:
+                yield "step", line
+            seen = len(trace)
+            final = state
+    except GeminiUnavailable:
+        yield "step", "Gemini unavailable, so the most relevant policy text is shown instead"
+        yield "done", _quote_policy(final or {})
+        return
     yield "done", _result(final)

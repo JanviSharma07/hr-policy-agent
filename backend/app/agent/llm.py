@@ -10,8 +10,8 @@ from app.config import GEMINI_API_KEY, GEMINI_MODEL, GEMINI_FALLBACK_MODELS, GEM
 log = logging.getLogger("uvicorn.error")  # shows up in the uvicorn terminal
 
 RETRYABLE = {429, 500, 503, 504}   # busy / rate-limited / temporary server errors
-ROUNDS = 2                         # try every model once, then all of them once more
-TIMEOUT_MS = 25_000                # give up on one call after 25 s and try the next model
+ROUNDS = 1                         # try each model once; if all fail, the agent falls back to quoting the policy
+TIMEOUT_MS = 20_000                # give up on one call after 20 s and try the next model
 THINKING = os.getenv("GEMINI_THINKING", "low")  # short "thinking" = much faster answers
 _thinking_ok = True                # switched off if this model/SDK doesn't accept it
 
@@ -61,6 +61,10 @@ def _is_temporary(error: Exception) -> bool:
     return "timeout" in name or "timed out" in str(error).lower()
 
 
+class GeminiUnavailable(RuntimeError):
+    """Every Gemini model failed (busy, quota used up, or timed out)."""
+
+
 def _models(fast: bool) -> list[str]:
     order = ([GEMINI_FAST_MODEL] if fast else []) + [GEMINI_MODEL, *GEMINI_FALLBACK_MODELS]
     return list(dict.fromkeys(m for m in order if m))  # drop duplicates, keep order
@@ -84,4 +88,4 @@ def generate_json(system: str, prompt: str, fast: bool = False, label: str = "ag
                 log.warning("Gemini %-11s %-24s failed after %.1fs (%s), retrying",
                             label, model, time.perf_counter() - start, type(e).__name__)
                 time.sleep(0.5)
-    raise RuntimeError(f"Gemini is busy, tried all models: {last_error}")
+    raise GeminiUnavailable(f"Gemini is busy, tried all models: {last_error}")
