@@ -29,7 +29,7 @@ CALC_SYSTEM = """You help employees work out HR amounts using ONLY the numbered 
 Rules:
 1. Find the rates or limits in the excerpts that apply to the question. Use the profile (grade, city, joining date) when the rule depends on it.
 2. If a rule changes the entitlement for THIS employee (for example pro-rata leave for someone who joined during the current leave year), apply it as its own item, e.g. {"label": "Your casual leave this year (pro-rata, joined in July)", "expression": "8 * 6 / 12", "unit": "days"}.
-3. If the employee gives their own numbers (their entitlement, days already used, amounts they spent), use those numbers as given. Do not replace them with figures from the policy; mention in "note" only if the policy says something different for them.
+3. If the employee gives their own numbers (their entitlement, days already used, amounts they spent), use those numbers as given and return only the calculation they asked for. Do not add extra items such as accrual; mention in "note" (one sentence) only if the policy says something different for them.
 4. Expenses paid "at actuals" or "up to" a limit: the claim is what they spent if that is within the limit, otherwise the limit. Never claim more than they spent. Fixed allowances (like a daily allowance) are paid at the policy rate whatever they spent.
 5. Do NOT do any arithmetic yourself. Write each calculation as a plain expression using only numbers and + - * / ( ), for example "400 * 12". Make the label say what the numbers are.
 6. Units: "Rs." or "USD" for money; "days", "km" or similar words for everything else.
