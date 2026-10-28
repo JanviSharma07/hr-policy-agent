@@ -1,0 +1,361 @@
+text,label
+How many casual leaves do I get?,policy_qa
+What is the notice period for applying for earned leave?,policy_qa
+Do I need a medical certificate for sick leave?,policy_qa
+Who approves international travel?,policy_qa
+Which days are mandatory office days?,policy_qa
+Is Independence Day a company holiday?,policy_qa
+Can I combine casual leave with earned leave?,policy_qa
+What expenses are not reimbursed on a business trip?,policy_qa
+how many sick leaves per year,policy_qa
+Can I take casual leave for half a day?,policy_qa
+Does unused casual leave carry over to next year?,policy_qa
+What is the maximum sick leave balance I can hold?,policy_qa
+How many days in advance should earned leave be applied?,policy_qa
+Is there a minimum number of days for earned leave?,policy_qa
+How many weeks of maternity leave does the company give?,policy_qa
+Is paternity leave paid?,policy_qa
+Can paternity leave be split into two parts?,policy_qa
+How many days of bereavement leave are allowed?,policy_qa
+Which family members count for bereavement leave?,policy_qa
+Where do I apply for leave?,policy_qa
+How long does my manager have to approve a leave request?,policy_qa
+By what time should I inform my manager if I'm absent?,policy_qa
+What happens if I'm absent for 3 days without approval?,policy_qa
+Does the leave policy apply to contract staff?,policy_qa
+When does the leave year begin?,policy_qa
+Is earned leave credited monthly?,policy_qa
+What is the per km rate for a two wheeler?,policy_qa
+Are toll charges paid back separately?,policy_qa
+What is the hotel limit in non-metro cities?,policy_qa
+Do I need receipts for small expenses?,policy_qa
+Which train class can L5 employees use?,policy_qa
+When are travel claims paid out?,policy_qa
+Is alcohol reimbursed?,policy_qa
+Is the daily allowance different for international trips?,policy_qa
+Do I have to book hotels through the travel desk?,policy_qa
+What are the core working hours when working from home?,policy_qa
+Do I need to use the VPN when I work from home?,policy_qa
+Can lab staff work from home?,policy_qa
+Does unused WFH carry forward to the next week?,policy_qa
+How many public holidays are there in a year?,policy_qa
+When is the holiday list published?,policy_qa
+How many optional holidays can we take?,policy_qa
+Can unused optional holidays be encashed?,policy_qa
+What is a compensatory off?,policy_qa
+Is a holiday during sick leave counted as leave?,policy_qa
+Can I take next Friday off?,policy_qa
+If I'm down with fever what leave should I use?,policy_qa
+whats the rule for taking leave on short notice,policy_qa
+Do I need to show proof of distance for mileage claims?,policy_qa
+Is camera on mandatory in WFH meetings?,policy_qa
+What's the policy on travelling with family?,policy_qa
+leave kaise apply karte hain,policy_qa
+Can I claim parking at the airport?,policy_qa
+Is there a limit on how much earned leave I can save?,policy_qa
+What counts as an immediate family member?,policy_qa
+How do I request an optional holiday?,policy_qa
+Are public holidays different for each office location?,policy_qa
+What proof is needed for a sick leave of 4 days?,policy_qa
+Can I get reimbursed for a cab to the airport?,policy_qa
+Is the internet allowance paid every month?,policy_qa
+Summarize the leave policy,summarize
+Give me an overview of the travel policy,summarize
+What are the main points of the work from home policy?,summarize
+Can you sum up the holiday rules in a few lines?,summarize
+Explain the travel reimbursement policy briefly,summarize
+I want a quick summary of the WFH rules,summarize
+summary of leave policy pls,summarize
+Give me the key points of the holiday policy,summarize
+What does the leave policy cover overall?,summarize
+Can you explain the whole travel policy in simple words?,summarize
+TL;DR of the work from home policy?,summarize
+Break down the leave policy for a new joiner,summarize
+"I'm new here, explain the main HR policies",summarize
+Give me a short overview of all leave types,summarize
+Summarise the rules for business travel,summarize
+What should I know about the WFH policy in brief?,summarize
+List the important rules in the holiday policy,summarize
+Brief me on the travel and reimbursement rules,summarize
+Explain the leave policy in bullet points,summarize
+Can I get a summary of the optional holiday rules?,summarize
+Overview of maternity and paternity leave please,summarize
+What are the highlights of the travel policy?,summarize
+Give me a one-paragraph summary of the leave rules,summarize
+Short version of the remote work policy?,summarize
+Sum up everything about sick leave,summarize
+"I don't have time to read the travel policy, summarize it",summarize
+What's in the holiday policy?,summarize
+Give me the gist of the leave policy,summarize
+Explain the WFH policy like I'm a new employee,summarize
+Quick rundown of reimbursement rules,summarize
+Main takeaways from the leave policy?,summarize
+Give an outline of the work from home rules,summarize
+Summarize everything about earned leave,summarize
+Can you condense the travel policy into 5 points?,summarize
+holiday policy summary,summarize
+Recap the rules for claiming travel expenses,summarize
+What are the key rules I must remember about leave?,summarize
+Explain the structure of the leave policy,summarize
+Give me a cheat sheet for the travel policy,summarize
+Overview of how WFH works here,summarize
+Summarize the bereavement and paternity leave rules,summarize
+What does the travel policy say overall?,summarize
+Briefly explain all the leave types we have,summarize
+Give me a simple summary of holiday and leave rules,summarize
+Summarise the home office allowance rules,summarize
+leave policy ka summary do,summarize
+Give me an easy explanation of the claim process,summarize
+What are the most important parts of the holiday policy?,summarize
+Can you summarize the rules on own vehicle use?,summarize
+Give me a quick tour of the HR policies,summarize
+Explain the entire WFH policy quickly,summarize
+Summary of the rules for daily allowance and hotels,summarize
+What are the basics of the leave policy?,summarize
+Can you give me the short version of the leave rules?,summarize
+Outline the travel approval and claim process,summarize
+Summarize the policy on working on holidays,summarize
+"What do new employees need to know about leave, in short?",summarize
+Give me a quick summary of the latest travel policy,summarize
+Highlight the key points of the remote working policy,summarize
+Give me a 3-line summary of the holiday policy,summarize
+What changed in the WFH policy from 2025 to 2026?,compare
+How is the new travel policy different from the old one?,compare
+Did the home office allowance go up this year?,compare
+Compare the old and new mileage rates,compare
+What is new in the latest leave policy?,compare
+Which rules were updated in the 2027 travel policy?,compare
+whats different in the new wfh policy,compare
+Did the daily allowance change in the new travel policy?,compare
+How has the number of WFH days changed?,compare
+Compare the 2026 and 2027 travel policies,compare
+Was the claim deadline changed?,compare
+What's the difference between the old and new WFH eligibility rules?,compare
+Has the per km rate for cars increased?,compare
+Did anything change in the hotel limits?,compare
+List the changes in the latest version of the travel policy,compare
+What got removed from the WFH policy?,compare
+Show me what's new compared to last year's policy,compare
+Is the internet allowance higher now than before?,compare
+How does this year's WFH approval process differ from last year's?,compare
+What did they update in the remote work policy?,compare
+Did the bike mileage rate change?,compare
+"Old vs new travel policy, what's different?",compare
+Are there any new rules in the latest travel policy?,compare
+Which allowances increased in the new policy?,compare
+Tell me the changes between the two versions of the WFH policy,compare
+Is the new policy better or worse for travel claims?,compare
+Compare previous and current home office allowance,compare
+What was the WFH limit before and what is it now?,compare
+Has the setup allowance been revised?,compare
+Did the metro daily allowance go up?,compare
+What's been added to the travel policy this time?,compare
+Have the WFH eligibility rules become stricter?,compare
+Difference between last version and current version of the travel rules,compare
+Did they add a rate for electric vehicles?,compare
+How did the approval process for WFH change?,compare
+Compare the earlier and latest mileage reimbursement,compare
+What changes were made in 2026 to working from home?,compare
+Any difference in the claim submission rules now?,compare
+Is it still 2 WFH days a week or did that change?,compare
+What's updated in the newest policy version?,compare
+Before and after: travel daily allowance,compare
+Did the other-cities allowance increase?,compare
+What are the revisions in the latest WFH policy?,compare
+Has the deadline to submit expense claims been extended?,compare
+Changes in mandatory office days compared to the old policy?,compare
+nayi travel policy mein kya badla,compare
+Did they change anything about tolls and parking?,compare
+Compare the old WFH notice period with the new one,compare
+What's different about ad-hoc WFH requests now?,compare
+Version 2027 vs 2026 of the travel policy,compare
+Did the new policy change who is eligible for WFH?,compare
+What rules stayed the same and what changed in travel?,compare
+Is the new two-wheeler rate higher?,compare
+Tell me what HR updated in the latest policies,compare
+How do the old and new allowance amounts compare?,compare
+Did the company increase the internet reimbursement?,compare
+What's changed since the last travel policy update?,compare
+Has the WFH allowance changed from last year?,compare
+Compare the latest policy with the archived one,compare
+Did the rules for claims over 30 days change?,compare
+Am I eligible for earned leave?,eligibility
+Can I work from home yet?,eligibility
+Do I qualify for maternity leave?,eligibility
+Am I allowed to fly business class?,eligibility
+Can I take paternity leave now?,eligibility
+Do I get the home office allowance?,eligibility
+Can I apply for earned leave already?,eligibility
+"I joined 2 months ago, can I take earned leave?",eligibility
+Am I eligible to work from home?,eligibility
+Do I qualify for the setup allowance?,eligibility
+Can I travel AC 2-tier at my grade?,eligibility
+Which flight class am I allowed?,eligibility
+Is my grade allowed business class on long flights?,eligibility
+"I'm on probation, can I work from home?",eligibility
+Can I encash my leave if I resign now?,eligibility
+Am I eligible for bereavement leave for my grandmother?,eligibility
+Do I qualify for 26 weeks of maternity leave?,eligibility
+"I'm having my third child, how much maternity leave can I get?",eligibility
+Am I eligible for the internet allowance?,eligibility
+Can I claim mileage for my own car?,eligibility
+Do interns get casual leave?,eligibility
+"I'm a contractor, does the leave policy apply to me?",eligibility
+"With my 4 months of service, can I take earned leave?",eligibility
+Do I qualify for WFH given my joining date?,eligibility
+Can someone in the lab team work from home?,eligibility
+"I'm L6, can I book first class train tickets?",eligibility
+Can I take earned leave during my notice period?,eligibility
+Do I accrue leave while on unpaid leave?,eligibility
+Am I eligible for pro-rata leave since I joined mid year?,eligibility
+"As a new joiner, how many casual leaves do I get?",eligibility
+Can I opt for an optional holiday this month?,eligibility
+Do I qualify for compensatory off if I worked on Republic Day?,eligibility
+am i eligible for wfh,eligibility
+Can I get paid for unused earned leave when I retire?,eligibility
+Do I get paternity leave for adopting a child?,eligibility
+Am I eligible for maternity leave if I joined 2 months ago?,eligibility
+Can I apply for WFH if I've just finished probation?,eligibility
+Is someone at my grade allowed to claim a hotel in Mumbai?,eligibility
+Do I qualify for daily allowance on a day trip?,eligibility
+"As an L2 employee, can I fly economy?",eligibility
+Am I entitled to any leave in my first month?,eligibility
+Can I take leave in half days as an intern?,eligibility
+Will I get comp off for working on a holiday?,eligibility
+Am I eligible for an international travel allowance?,eligibility
+Do I meet the criteria for earned leave encashment?,eligibility
+Can I take 3 WFH days if I'm in the facilities team?,eligibility
+Am I eligible for leave after 6 months of service?,eligibility
+kya main earned leave le sakti hoon,eligibility
+Is my role eligible for remote work?,eligibility
+Can I claim an electric vehicle rate for my scooter?,eligibility
+Do I qualify for the higher hotel limit?,eligibility
+Am I allowed to take earned leave next week?,eligibility
+Can I get bereavement leave for my uncle?,eligibility
+Am I eligible for paternity leave if my child was born 4 months ago?,eligibility
+Do new employees get the home office setup allowance?,eligibility
+Can I avail optional holidays in my first year?,eligibility
+Am I allowed to work from home on Tuesdays?,eligibility
+"Given my joining date, can I use earned leave?",eligibility
+Do I qualify for travel by air?,eligibility
+Am I eligible for any allowance when working remotely?,eligibility
+How much do I get for a 400 km trip by car?,calculation
+What is my daily allowance for 3 days in Delhi?,calculation
+How much leave encashment will I get for 20 days?,calculation
+How much can I claim for 2 nights in a hotel in Mumbai?,calculation
+I rode my bike 120 km for work. How much is that?,calculation
+What do I get for a half day trip to Mysuru?,calculation
+How much will I be reimbursed for driving 250 km?,calculation
+Calculate my mileage for a 90 km round trip by car,calculation
+What's the total daily allowance for a 5 day trip to Chennai?,calculation
+If I stay 3 nights in Pune what's the max hotel claim?,calculation
+How much for 2 days in Hyderabad plus 1 night hotel?,calculation
+"My basic salary is 40000, how much is encashment for 15 days?",calculation
+How many earned leaves will I have after 8 months?,calculation
+How much earned leave do I accrue in a quarter?,calculation
+How many leaves will I have left if I take 3 casual leaves?,calculation
+"I drove 60 km and paid 200 in tolls, what's my claim?",calculation
+How much will I get for a 4 day international trip?,calculation
+Total reimbursement for a 300 km bike ride?,calculation
+how much for 150km car trip,calculation
+What's my allowance for 2 full days and one short day in Bengaluru?,calculation
+How much can I claim for a week in Kolkata?,calculation
+Calculate the hotel limit for 4 nights in Jaipur,calculation
+"I travelled 500 km by car over 2 days in Delhi, how much do I get in total?",calculation
+How much money for 10 km by EV?,calculation
+What's my claim for 75 km on my two-wheeler?,calculation
+How much is half the daily allowance for a metro city?,calculation
+"If my basic is 30000 and I have 25 days, what's my encashment?",calculation
+How many sick leaves can I carry if I used 6 this year?,calculation
+How much daily allowance for 2 days in Nagpur?,calculation
+What will I get for 3 nights in a Delhi hotel and 3 days allowance?,calculation
+Calculate my travel claim for 180 km by car plus 300 parking,calculation
+How many earned leaves do I get in 4 months?,calculation
+What's the maximum hotel amount for 5 nights in a metro?,calculation
+"How much for driving from Bengaluru to Mysuru, 145 km?",calculation
+total allowance for 6 day trip to mumbai,calculation
+How many days of leave do I have if I joined in July?,calculation
+Compute my reimbursement for 40 km by bike daily for 5 days,calculation
+How much is 12 days of earned leave worth at 36000 basic?,calculation
+Daily allowance for 1 day in Pune under 12 hours?,calculation
+How much will the company pay for a 2 night stay in Indore?,calculation
+"I'll be in Chennai for 3 days, how much allowance do I get?",calculation
+What's 220 km by car in rupees?,calculation
+How much DA for a trip of 2.5 days to Delhi?,calculation
+How many casual leaves would I get if I joined in October?,calculation
+How much will I lose if I can't carry forward 8 casual leaves?,calculation
+Calculate encashment for 30 days with basic 50000,calculation
+How much for 3 nights at a hotel and 350 km by car?,calculation
+mileage for 80km on scooter?,calculation
+How much do I get per day in total for meals in Kolkata over 4 days?,calculation
+"What's the claim for a 2 day trip to Mangaluru by own car, 700 km?",calculation
+How much hotel money can I claim for a 6 night stay in Hyderabad?,calculation
+How many earned leaves will I have saved after a year if I take none?,calculation
+What is 18 days of encashment if my basic salary is 27000?,calculation
+How much do I get for 2 trips of 60 km each by car?,calculation
+"I worked 2 public holidays, how many comp offs do I get?",calculation
+How many WFH days can I take in a month?,calculation
+"Total claim for 120 km by car, 2 days allowance in Mysuru and 1 night hotel?",calculation
+"If I take 4 sick days, how many will I have left?",calculation
+What's my total for 50 km per day by car for 3 days?,calculation
+How much allowance for a 1 day trip to Delhi?,calculation
+What's the weather in Bangalore today?,out_of_scope
+Tell me a joke,out_of_scope
+Who won the cricket match yesterday?,out_of_scope
+Write me a Python program to sort a list,out_of_scope
+What is the capital of France?,out_of_scope
+Recommend a good restaurant near the office,out_of_scope
+What's the stock price of Infosys?,out_of_scope
+Translate hello into Japanese,out_of_scope
+Who is the prime minister of India?,out_of_scope
+How do I make biryani?,out_of_scope
+What movies are releasing this week?,out_of_scope
+Can you help with my maths homework?,out_of_scope
+What's 245 times 13?,out_of_scope
+Write a poem about the rain,out_of_scope
+Explain how a neural network works,out_of_scope
+Book me a cab to the airport,out_of_scope
+What time is it in London?,out_of_scope
+Suggest a good laptop under 60000,out_of_scope
+How do I reset my Gmail password?,out_of_scope
+Who is the CEO of Google?,out_of_scope
+Give me tips to lose weight,out_of_scope
+What's the latest news today?,out_of_scope
+Can you write my resume?,out_of_scope
+How far is the moon from Earth?,out_of_scope
+What is machine learning?,out_of_scope
+Recommend some songs for a road trip,out_of_scope
+How do I fix a slow laptop?,out_of_scope
+hi,out_of_scope
+thanks,out_of_scope
+What is the meaning of life?,out_of_scope
+Plan a weekend trip to Goa for me,out_of_scope
+Which is the best phone camera this year?,out_of_scope
+How do I learn guitar?,out_of_scope
+Tell me about the history of the Mughal empire,out_of_scope
+What's the score of the football match?,out_of_scope
+Write an email to my friend for her birthday,out_of_scope
+How do I cook pasta?,out_of_scope
+What does HTTP stand for?,out_of_scope
+Is it going to rain tomorrow?,out_of_scope
+Who wrote Harry Potter?,out_of_scope
+Can you play some music?,out_of_scope
+How do I open a bank account?,out_of_scope
+What's the exchange rate of the dollar today?,out_of_scope
+Suggest a name for my cat,out_of_scope
+How do I install Python on Windows?,out_of_scope
+Who won the last World Cup?,out_of_scope
+Tell me something interesting,out_of_scope
+What are the symptoms of dengue?,out_of_scope
+Find me a flat to rent in Koramangala,out_of_scope
+Convert 5 miles to kilometres,out_of_scope
+How tall is Mount Everest?,out_of_scope
+What's a good book to read?,out_of_scope
+How do I file my income tax return?,out_of_scope
+Teach me Spanish,out_of_scope
+What's trending on Instagram?,out_of_scope
+Draw me a picture of a dog,out_of_scope
+Are you human?,out_of_scope
+What's your favourite colour?,out_of_scope
+How do I make my code run faster?,out_of_scope
+Who invented the telephone?,out_of_scope

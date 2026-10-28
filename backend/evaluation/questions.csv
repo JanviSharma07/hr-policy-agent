@@ -1,0 +1,61 @@
+id,question,policy,section,type
+1,How many casual leaves do I get in a year?,Leave Policy,3. Casual Leave,keyword
+2,Can I take four casual leaves in a row?,Leave Policy,3. Casual Leave,paraphrase
+3,What happens to my unused casual leave at the end of the year?,Leave Policy,3. Casual Leave,keyword
+4,How many days of sick leave am I entitled to?,Leave Policy,4. Sick Leave,keyword
+5,"I was unwell for three days, do I need a doctor's note?",Leave Policy,4. Sick Leave,paraphrase
+6,How many sick days can I carry over to next year?,Leave Policy,4. Sick Leave,paraphrase
+7,How much earned leave do I build up each month?,Leave Policy,2. Leave Year and Accrual,paraphrase
+8,When does the leave year start and end?,Leave Policy,2. Leave Year and Accrual,keyword
+9,"I joined in the middle of the year, how is my leave worked out?",Leave Policy,2. Leave Year and Accrual,paraphrase
+10,After how many months of service can I use earned leave?,Leave Policy,5. Earned Leave,keyword
+11,How far in advance must I apply for earned leave?,Leave Policy,5. Earned Leave,keyword
+12,What is the maximum earned leave I can carry forward?,Leave Policy,5. Earned Leave,keyword
+13,Can I get paid for my unused leave when I quit?,Leave Policy,6. Leave Encashment,paraphrase
+14,How is leave encashment calculated?,Leave Policy,6. Leave Encashment,keyword
+15,How long is maternity leave for the first child?,Leave Policy,7. Maternity Leave,keyword
+16,"I am adopting a baby, how much time off do I get?",Leave Policy,7. Maternity Leave,paraphrase
+17,How many days off do new fathers get?,Leave Policy,8. Paternity Leave,paraphrase
+18,"A close family member passed away, how many days off can I take?",Leave Policy,9. Bereavement Leave,paraphrase
+19,Who approves my leave request and how quickly?,Leave Policy,10. Applying for Leave,paraphrase
+20,What should I do if I suddenly can't come to work today?,Leave Policy,10. Applying for Leave,paraphrase
+21,Do interns get leave under this policy?,Leave Policy,1. Purpose and Scope,paraphrase
+22,Do I need permission before going on an official trip?,Travel Policy,2. Travel Approval,paraphrase
+23,Who has to approve international travel?,Travel Policy,2. Travel Approval,keyword
+24,Which train class can L2 employees book?,Travel Policy,3. Mode of Travel,keyword
+25,Can senior employees fly business class?,Travel Policy,3. Mode of Travel,paraphrase
+26,How much do I get per km if I use my car?,Travel Policy,4. Own Vehicle Mileage,paraphrase
+27,How much do I get per kilometre on my bike?,Travel Policy,4. Own Vehicle Mileage,paraphrase
+28,Are tolls and parking charges reimbursed?,Travel Policy,4. Own Vehicle Mileage,keyword
+29,What proof do I need for the distance I drove?,Travel Policy,4. Own Vehicle Mileage,paraphrase
+30,What is the daily allowance in metro cities?,Travel Policy,5. Daily Allowance,keyword
+31,How much money do I get for meals when travelling to a small town?,Travel Policy,5. Daily Allowance,paraphrase
+32,What daily allowance do I get for a travel day of less than 12 hours?,Travel Policy,5. Daily Allowance,keyword
+33,What is the most I can spend on a hotel per night in Mumbai?,Travel Policy,6. Hotel Accommodation,paraphrase
+34,Do I need to claim hotel stays booked through the travel desk?,Travel Policy,6. Hotel Accommodation,keyword
+35,What is the deadline to submit a travel claim?,Travel Policy,7. Claim Submission,keyword
+36,Which bills do I need to attach to my expense claim?,Travel Policy,7. Claim Submission,paraphrase
+37,When will my approved claim be paid?,Travel Policy,7. Claim Submission,keyword
+38,Can I claim the drinks I bought during a business trip?,Travel Policy,8. Non-Reimbursable Expenses,paraphrase
+39,Will the company pay if my family travels with me?,Travel Policy,8. Non-Reimbursable Expenses,paraphrase
+40,Who is eligible to work from home?,WFH Policy,2. Eligibility,keyword
+41,Can lab staff work remotely?,WFH Policy,2. Eligibility,paraphrase
+42,How many days a week can I work from home?,WFH Policy,3. Number of WFH Days,keyword
+43,Which days do I have to come into the office?,WFH Policy,3. Number of WFH Days,paraphrase
+44,How do I get my remote working days approved?,WFH Policy,4. Approval Process,paraphrase
+45,How much notice is needed for an ad-hoc WFH day?,WFH Policy,4. Approval Process,keyword
+46,Is there a home office setup allowance?,WFH Policy,5. Home Office Allowance,keyword
+47,Does the company pay for my internet at home?,WFH Policy,5. Home Office Allowance,paraphrase
+48,What hours must I be online when working from home?,WFH Policy,6. Availability and Conduct,paraphrase
+49,Do I have to use the company VPN at home?,WFH Policy,6. Availability and Conduct,keyword
+50,Must I switch my camera on in meetings when working remotely?,WFH Policy,6. Availability and Conduct,paraphrase
+51,How many fixed public holidays does the company observe?,Holiday Policy,2. Public Holidays,keyword
+52,Is Independence Day a holiday?,Holiday Policy,2. Public Holidays,keyword
+53,When is next year's list of holidays published?,Holiday Policy,2. Public Holidays,paraphrase
+54,How many optional holidays can I choose?,Holiday Policy,3. Optional Holidays,keyword
+55,How early must I apply for an optional holiday?,Holiday Policy,3. Optional Holidays,keyword
+56,Can I carry forward unused optional holidays?,Holiday Policy,3. Optional Holidays,keyword
+57,What do I get if my manager asks me to work on a festival day off?,Holiday Policy,4. Working on a Holiday,paraphrase
+58,How long do I have to use a compensatory off?,Holiday Policy,4. Working on a Holiday,keyword
+59,If a public holiday falls during my earned leave is it counted as leave?,Holiday Policy,5. Holidays During Leave,keyword
+60,Does a festival in the middle of my sick days reduce my leave balance?,Holiday Policy,5. Holidays During Leave,paraphrase

@@ -10,6 +10,7 @@ def search(
     use_reranker: bool = True,
     min_relevance: float = MIN_RELEVANCE,
     include_archived: bool = False,
+    relative_keep: float = RELATIVE_KEEP,
 ) -> list[dict]:
     candidates = query_chunks(embed_query(question), TOP_K_RETRIEVE, include_archived=include_archived)
     if not use_reranker:
@@ -21,7 +22,9 @@ def search(
         return ranked
     if not ranked or ranked[0]["relevance"] < min_relevance:
         return []                    # nothing in the policies matches
-    cutoff = max(min_relevance, ranked[0]["relevance"] * RELATIVE_KEEP)
+    if relative_keep <= 0:           # agent mode: the best match is relevant, so read all top_k
+        return ranked
+    cutoff = max(min_relevance, ranked[0]["relevance"] * relative_keep)
     return [r for r in ranked if r["relevance"] >= cutoff]
 
 

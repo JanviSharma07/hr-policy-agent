@@ -21,6 +21,8 @@ TOP_K_RETRIEVE = 20
 TOP_K_FINAL = 5
 MIN_RELEVANCE = 0.05   # floor: if the best result is below this, nothing is relevant
 RELATIVE_KEEP = 0.5    # keep results with at least half the best result's relevance
+AGENT_RELATIVE_KEEP = 0.0  # 0 = the agent reads all top 5 sections once the best one is relevant
+OUT_OF_SCOPE_OVERRIDE = 0.15  # if the router says off-topic but a policy section scores this high, answer anyway
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
 GEMINI_FAST_MODEL = os.getenv("GEMINI_FAST_MODEL", "gemini-3.5-flash-lite")  # routing and rewriting

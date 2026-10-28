@@ -1,0 +1,29 @@
+=== TF-IDF + logistic regression (baseline) ===
+Accuracy: 0.796   Macro F1: 0.782
+              precision    recall  f1-score   support
+
+   policy_qa      0.625     0.556     0.588         9
+   summarize      0.889     0.889     0.889         9
+     compare      0.818     1.000     0.900         9
+ eligibility      0.818     1.000     0.900         9
+ calculation      0.800     0.889     0.842         9
+out_of_scope      0.800     0.444     0.571         9
+
+    accuracy                          0.796        54
+   macro avg      0.792     0.796     0.782        54
+weighted avg      0.792     0.796     0.782        54
+
+=== Fine-tuned DistilBERT ===
+Accuracy: 0.907   Macro F1: 0.908
+              precision    recall  f1-score   support
+
+   policy_qa      0.778     0.778     0.778         9
+   summarize      1.000     0.889     0.941         9
+     compare      0.818     1.000     0.900         9
+ eligibility      0.889     0.889     0.889         9
+ calculation      1.000     1.000     1.000         9
+out_of_scope      1.000     0.889     0.941         9
+
+    accuracy                          0.907        54
+   macro avg      0.914     0.907     0.908        54
+weighted avg      0.914     0.907     0.908        54

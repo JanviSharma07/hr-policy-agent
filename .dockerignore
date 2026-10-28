@@ -1,0 +1,13 @@
+**/.env
+**/venv
+**/.venv
+**/__pycache__
+**/*.pyc
+**/node_modules
+frontend/dist
+backend/chroma_db
+backend/data
+backend/checkpoints
+**/*.dump
+**/*.zip
+.git

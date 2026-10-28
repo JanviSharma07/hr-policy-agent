@@ -26,6 +26,21 @@ def safe_eval(expression: str) -> float:
     return ev(ast.parse(expression.replace(",", ""), mode="eval"))
 
 
+CURRENCIES = {"rs.", "rs", "inr", "₹", "usd", "$"}
+
+
+def is_money(unit: str) -> bool:
+    return unit.strip().lower() in CURRENCIES
+
+
 def format_amount(value: float, unit: str) -> str:
     number = f"{value:,.0f}" if float(value).is_integer() else f"{value:,.2f}"
-    return f"{unit} {number}".strip()
+    unit = unit.strip()
+    if not unit:
+        return number
+    return f"{unit} {number}" if is_money(unit) else f"{number} {unit}"  # Rs. 4,800 / 4 days
+
+
+def show_working(expression: str) -> str:
+    """'400 * 12' -> '400 × 12' so employees can check the maths."""
+    return expression.replace("*", " × ").replace("/", " ÷ ").replace("  ", " ").strip()
