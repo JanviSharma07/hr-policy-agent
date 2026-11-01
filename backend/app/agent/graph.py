@@ -268,9 +268,10 @@ _MARKERS = re.compile(r"(?:\s*\b(?:under|per|see|in|from|according to)\s+)?\s*\[
 
 def clean_answer(text: str) -> str:
     """Remove '[1]' style excerpt numbers: the sources are shown separately."""
-    text = re.sub(r"\b(?:[Ss]ection|[Ee]xcerpt|[Ss]ource)s?\s+\[\d+(?:\s*,\s*\d+)*\]", "the policy", text)  # "Section [1] says"
+    text = re.sub(r"\b(?:[Ss]ection|[Ee]xcerpt|[Ss]ource)s?\s+\[\d+(?:\s*,\s*\d+)*\](?:\s*(?:,|and)\s*\[\d+(?:\s*,\s*\d+)*\])*", "the policy", text)  # "Section [1] says"
     text = re.sub(r"(?:(?<=^)|(?<=[.:;!?]\s)|(?<=\n))\s*(?:[Uu]nder|[Pp]er|[Aa]s per|[Aa]ccording to)\s+\[\d+(?:\s*,\s*\d+)*\],?\s*", "", text)
     text = _MARKERS.sub("", text)
+    text = re.sub(r"\s*\(the policy\)", "", text)  # "(Sections [2], [5])" adds nothing: drop it
     text = re.sub(r"\s+([,.;:])", r"\1", text)
     text = re.sub(r",(?:\s*,)+", ",", text)
     text = re.sub(r"([.:;!?]),", r"\1", text)  # "portal., hotel" / "depends:, hotels"
