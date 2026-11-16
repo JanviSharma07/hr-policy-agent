@@ -9,6 +9,13 @@ NEW_COLUMNS = {
         "join_date": "DATE",
         "grade": "VARCHAR(20)",
         "city": "VARCHAR(100)",
+        "department": "VARCHAR(100)",
+        "job_title": "VARCHAR(100)",
+        "skills": "JSON",
+    },
+    "messages": {
+        "intent": "VARCHAR(30)",
+        "feedback": "INTEGER",
     },
     "documents": {
         "family_id": "INTEGER",

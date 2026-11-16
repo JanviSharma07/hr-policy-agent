@@ -184,6 +184,73 @@ export const chatAPI = {
       method: "DELETE",
     });
   },
+
+  // value: 1 = helpful, -1 = not helpful, 0 = remove the rating
+  sendFeedback(messageId, value) {
+    return apiRequest(`/chat/messages/${messageId}/feedback`, {
+      method: "POST",
+      body: { value },
+    });
+  },
+};
+
+// HR administrator: employee directory and insights
+export const hrAPI = {
+  getEmployees() {
+    return apiRequest("/hr/employees");
+  },
+
+  updateEmployee(userId, data) {
+    return apiRequest(`/hr/employees/${userId}`, {
+      method: "PATCH",
+      body: data,
+    });
+  },
+
+  getInsights() {
+    return apiRequest("/hr/insights");
+  },
+};
+
+// HR Inbox: private questions to HR, and questions Humanly couldn't answer
+export const requestsAPI = {
+  ask(topic, question) {
+    return apiRequest("/requests", { method: "POST", body: { topic, question } });
+  },
+
+  mine() {
+    return apiRequest("/requests/mine");
+  },
+
+  markSeen() {
+    return apiRequest("/requests/mine/seen", { method: "POST" });
+  },
+
+  inbox({ status = "", department = "" } = {}) {
+    const params = new URLSearchParams();
+    if (status) params.set("status", status);
+    if (department) params.set("department", department);
+    return apiRequest(`/requests?${params}`);
+  },
+
+  reply(requestId, reply, teach) {
+    return apiRequest(`/requests/${requestId}/reply`, { method: "POST", body: { reply, teach } });
+  },
+};
+
+// Holiday calendar
+export const holidaysAPI = {
+  list() {
+    return apiRequest("/holidays");
+  },
+
+  add(day, name, kind) {
+    return apiRequest("/holidays", { method: "POST", body: { day, name, kind } });
+  },
+
+  remove(holidayId) {
+    return apiRequest(`/holidays/${holidayId}`, { method: "DELETE" });
+  },
 };
 
 // Backend status

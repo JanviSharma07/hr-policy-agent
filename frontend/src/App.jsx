@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import './App.css'
-import { authAPI, chatAPI, documentsAPI, systemAPI } from './services/api'
+import { authAPI, chatAPI, documentsAPI, holidaysAPI, hrAPI, requestsAPI, systemAPI } from './services/api'
+
+// Same list as DEPARTMENTS in backend/app/routes/auth.py
+const departments = ['Engineering', 'Sales', 'Marketing', 'Finance', 'Human Resources', 'Operations', 'Customer Support', 'Legal']
 
 const suggestions = [
   {
@@ -87,7 +90,7 @@ function formatDate(value) {
 
 function AuthScreen({ onLoggedIn, backendOnline }) {
   const [mode, setMode] = useState('login')
-  const [form, setForm] = useState({ email: '', password: '', join_date: '', grade: '', city: '' })
+  const [form, setForm] = useState({ email: '', password: '', join_date: '', department: '', job_title: '', city: '' })
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
@@ -105,7 +108,8 @@ function AuthScreen({ onLoggedIn, backendOnline }) {
           email: form.email.trim(),
           password: form.password,
           join_date: form.join_date || null,
-          grade: form.grade.trim() || null,
+          department: form.department || null,
+          job_title: form.job_title.trim() || null,
           city: form.city.trim() || null,
         })
       }
@@ -133,7 +137,7 @@ function AuthScreen({ onLoggedIn, backendOnline }) {
         <p className="auth-subtitle">
           {mode === 'login'
             ? 'Sign in to ask questions about your HR policies.'
-            : 'Your joining date, grade and city let HUMANLY answer eligibility and allowance questions for you.'}
+            : 'Your department, joining date and city let HUMANLY answer eligibility and allowance questions for you.'}
         </p>
 
         <label className="form-field">
@@ -147,20 +151,31 @@ function AuthScreen({ onLoggedIn, backendOnline }) {
         </label>
 
         {mode === 'register' && (
-          <div className="form-row">
-            <label className="form-field">
-              <span>Joining date</span>
-              <input type="date" value={form.join_date} onChange={(e) => update('join_date', e.target.value)} />
-            </label>
-            <label className="form-field">
-              <span>Grade</span>
-              <input value={form.grade} onChange={(e) => update('grade', e.target.value)} placeholder="e.g. L3" />
-            </label>
-            <label className="form-field">
-              <span>City</span>
-              <input value={form.city} onChange={(e) => update('city', e.target.value)} placeholder="e.g. Bengaluru" />
-            </label>
-          </div>
+          <>
+            <div className="form-row">
+              <label className="form-field">
+                <span>Department</span>
+                <select value={form.department} onChange={(e) => update('department', e.target.value)}>
+                  <option value="">Select…</option>
+                  {departments.map((d) => <option key={d}>{d}</option>)}
+                </select>
+              </label>
+              <label className="form-field">
+                <span>Job title</span>
+                <input value={form.job_title} onChange={(e) => update('job_title', e.target.value)} placeholder="e.g. Software Engineer" />
+              </label>
+            </div>
+            <div className="form-row">
+              <label className="form-field">
+                <span>Joining date</span>
+                <input type="date" value={form.join_date} onChange={(e) => update('join_date', e.target.value)} />
+              </label>
+              <label className="form-field">
+                <span>City</span>
+                <input value={form.city} onChange={(e) => update('city', e.target.value)} placeholder="e.g. Bengaluru" />
+              </label>
+            </div>
+          </>
         )}
 
         {error && <p className="form-error">{error}</p>}
@@ -239,13 +254,91 @@ function AgentTrace({ steps, live }) {
   )
 }
 
+/* ---------- Thumbs up / down on an answer ---------- */
+
+function Feedback({ messageId, value, onChange }) {
+  const [busy, setBusy] = useState(false)
+  if (!messageId) return null
+
+  async function rate(next) {
+    const newValue = value === next ? 0 : next // clicking the same button again removes the rating
+    setBusy(true)
+    try {
+      await chatAPI.sendFeedback(messageId, newValue)
+      onChange(newValue || null)
+    } catch {
+      // a failed rating shouldn't interrupt the chat
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="feedback-row">
+      <span className="feedback-label">{value ? 'Thanks for the feedback' : 'Was this helpful?'}</span>
+      <button className={`feedback-button ${value === 1 ? 'feedback-up' : ''}`} disabled={busy} onClick={() => rate(1)} aria-label="Helpful" title="Helpful">
+        👍
+      </button>
+      <button className={`feedback-button ${value === -1 ? 'feedback-down' : ''}`} disabled={busy} onClick={() => rate(-1)} aria-label="Not helpful" title="Not helpful">
+        👎
+      </button>
+    </div>
+  )
+}
+
+/* ---------- Skill tags: type a skill and press Enter or comma ---------- */
+
+function SkillsInput({ skills, onChange }) {
+  const [draft, setDraft] = useState('')
+
+  function add() {
+    const skill = draft.trim().replace(/,$/, '')
+    if (skill && !skills.some((s) => s.toLowerCase() === skill.toLowerCase())) onChange([...skills, skill])
+    setDraft('')
+  }
+
+  return (
+    <div className="skills-input">
+      {skills.map((skill) => (
+        <span className="skill-chip" key={skill}>
+          {skill}
+          <button type="button" onClick={() => onChange(skills.filter((s) => s !== skill))} aria-label={`Remove ${skill}`}>×</button>
+        </span>
+      ))}
+      <input
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ',') {
+            e.preventDefault()
+            add()
+          } else if (e.key === 'Backspace' && !draft && skills.length) {
+            onChange(skills.slice(0, -1))
+          }
+        }}
+        onBlur={add}
+        placeholder={skills.length ? 'Add another…' : 'Type a skill and press Enter'}
+      />
+    </div>
+  )
+}
+
+function SkillChips({ skills }) {
+  if (!skills?.length) return <span className="form-hint">No skills added yet</span>
+  return (
+    <div className="skill-list">
+      {skills.map((skill) => <span className="skill-chip skill-chip-static" key={skill}>{skill}</span>)}
+    </div>
+  )
+}
+
 /* ---------- Profile page ---------- */
 
 function ProfilePage({ user, onSaved, onLogout }) {
   const [form, setForm] = useState({
-    join_date: user.join_date || '',
-    grade: user.grade || '',
+    job_title: user.job_title || '',
     city: user.city || '',
+    skills: user.skills || [],
   })
   const [status, setStatus] = useState('')
 
@@ -254,9 +347,9 @@ function ProfilePage({ user, onSaved, onLogout }) {
     setStatus('Saving…')
     try {
       const updated = await authAPI.updateProfile({
-        join_date: form.join_date || null,
-        grade: form.grade.trim() || null,
+        job_title: form.job_title.trim() || null,
         city: form.city.trim() || null,
+        skills: form.skills,
       })
       onSaved(updated)
       setStatus('Saved ✓')
@@ -265,42 +358,63 @@ function ProfilePage({ user, onSaved, onLogout }) {
     }
   }
 
-  const months = monthsOfService(form.join_date)
+  const months = monthsOfService(user.join_date)
 
   return (
     <section className="activity-page">
       <div className="page-heading">
         <span className="welcome-eyebrow">YOUR ACCOUNT</span>
         <h1>My profile</h1>
-        <p>HUMANLY uses these details to answer eligibility and allowance questions for you.</p>
+        <p>HUMANLY uses your department, joining date and city to answer eligibility and allowance questions for you.</p>
+      </div>
+
+      <div className="profile-hero panel-card">
+        <div className="profile-hero-avatar">{initials(user.email)}</div>
+        <div className="profile-hero-copy">
+          <h2>{displayName(user.email)}</h2>
+          <p className="profile-hero-title">
+            {[user.job_title, user.department].filter(Boolean).join(' · ') || (user.role === 'hr_admin' ? 'HR admin' : 'Employee')}
+          </p>
+          <div className="profile-hero-meta">
+            {user.department && <span className="dept-badge">{user.department}</span>}
+            {user.city && <span>📍 {user.city}</span>}
+            {user.join_date && <span>🗓 Joined {formatDate(user.join_date)}</span>}
+            {months !== null && <span>⏱ {months} month{months === 1 ? '' : 's'} of service</span>}
+          </div>
+          <SkillChips skills={user.skills} />
+        </div>
       </div>
 
       <form className="panel-card" onSubmit={save}>
+        <h2 className="panel-title">Edit your details</h2>
         <div className="form-row">
           <label className="form-field">
             <span>Email</span>
             <input value={user.email} disabled />
           </label>
           <label className="form-field">
-            <span>Role</span>
-            <input value={user.role === 'hr_admin' ? 'HR admin' : 'Employee'} disabled />
+            <span>Department <em className="field-note">managed by HR</em></span>
+            <input value={user.department || 'Not set'} disabled />
+          </label>
+          <label className="form-field">
+            <span>Joining date <em className="field-note">managed by HR</em></span>
+            <input value={user.join_date ? formatDate(user.join_date) : 'Not set'} disabled />
           </label>
         </div>
         <div className="form-row">
           <label className="form-field">
-            <span>Joining date</span>
-            <input type="date" value={form.join_date} onChange={(e) => setForm({ ...form, join_date: e.target.value })} />
-          </label>
-          <label className="form-field">
-            <span>Grade</span>
-            <input value={form.grade} onChange={(e) => setForm({ ...form, grade: e.target.value })} placeholder="e.g. L3" />
+            <span>Job title</span>
+            <input value={form.job_title} onChange={(e) => setForm({ ...form, job_title: e.target.value })} placeholder="e.g. Software Engineer" />
           </label>
           <label className="form-field">
             <span>City</span>
             <input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} placeholder="e.g. Bengaluru" />
           </label>
         </div>
-        {months !== null && <p className="form-hint">That's {months} full month(s) of service.</p>}
+        <div className="form-field">
+          <span>Skills</span>
+          <SkillsInput skills={form.skills} onChange={(skills) => setForm({ ...form, skills })} />
+        </div>
 
         <div className="panel-actions">
           <button className="return-button" type="submit">Save profile</button>
@@ -308,6 +422,895 @@ function ProfilePage({ user, onSaved, onLogout }) {
           <button className="ghost-button" type="button" onClick={onLogout}>Sign out</button>
         </div>
       </form>
+    </section>
+  )
+}
+
+/* ---------- HR: employee directory ---------- */
+
+function EmployeesPage({ onAuthError }) {
+  const [employees, setEmployees] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [query, setQuery] = useState('')
+  const [departmentFilter, setDepartmentFilter] = useState('')
+  const [editing, setEditing] = useState(null) // { id, ...fields }
+  const [savingId, setSavingId] = useState(null)
+
+  const load = useCallback(async () => {
+    try {
+      setEmployees(await hrAPI.getEmployees())
+      setError('')
+    } catch (err) {
+      if (err.status === 401) onAuthError()
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }, [onAuthError])
+
+  useEffect(() => {
+    load()
+  }, [load])
+
+  function startEdit(emp) {
+    setEditing({
+      id: emp.id,
+      department: emp.department || '',
+      job_title: emp.job_title || '',
+      grade: emp.grade || '',
+      city: emp.city || '',
+      join_date: emp.join_date || '',
+      skills: emp.skills || [],
+    })
+  }
+
+  async function saveEdit(event) {
+    event.preventDefault()
+    setSavingId(editing.id)
+    try {
+      const { id, ...fields } = editing
+      const updated = await hrAPI.updateEmployee(id, { ...fields, join_date: fields.join_date || null })
+      setEmployees((list) => list.map((e) => (e.id === id ? { ...e, ...updated } : e)))
+      setEditing(null)
+    } catch (err) {
+      if (err.status === 401) onAuthError()
+      setError(err.message)
+    } finally {
+      setSavingId(null)
+    }
+  }
+
+  const q = query.toLowerCase().trim()
+  const visible = employees.filter((e) => {
+    if (departmentFilter && e.department !== departmentFilter) return false
+    if (!q) return true
+    return [e.email, e.job_title, e.department, e.city, ...(e.skills || [])]
+      .filter(Boolean)
+      .some((value) => value.toLowerCase().includes(q))
+  })
+  const departmentCount = new Set(employees.map((e) => e.department).filter(Boolean)).size
+
+  return (
+    <section className="activity-page">
+      <div className="page-heading">
+        <span className="welcome-eyebrow">HR ADMIN</span>
+        <h1>Employees</h1>
+        <p>Everyone in the company, with their department and skills. Grades are only visible here; HUMANLY uses them for travel and allowance rules.</p>
+      </div>
+
+      <div className="activity-stats">
+        <div className="activity-stat">
+          <span>Total people</span>
+          <strong>{employees.length}</strong>
+        </div>
+        <div className="activity-stat">
+          <span>Departments</span>
+          <strong>{departmentCount}</strong>
+        </div>
+        <div className="activity-stat">
+          <span>Questions asked</span>
+          <strong>{employees.reduce((sum, e) => sum + (e.questions_asked || 0), 0)}</strong>
+        </div>
+      </div>
+
+      <div className="directory-toolbar">
+        <label className="library-search directory-search">
+          <span>⌕</span>
+          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search by name, skill, city or job title…" />
+        </label>
+        <select className="directory-filter" value={departmentFilter} onChange={(e) => setDepartmentFilter(e.target.value)}>
+          <option value="">All departments</option>
+          {departments.map((d) => <option key={d}>{d}</option>)}
+        </select>
+      </div>
+
+      {error && <p className="notice notice-error">{error}</p>}
+
+      {loading ? (
+        <p className="form-hint">Loading…</p>
+      ) : visible.length === 0 ? (
+        <div className="activity-empty">
+          <span>☺</span>
+          <h3>No one matches</h3>
+          <p>Try a different search or department.</p>
+        </div>
+      ) : (
+        <div className="employee-grid">
+          {visible.map((emp) =>
+            editing?.id === emp.id ? (
+              <form className="employee-card employee-card-editing" key={emp.id} onSubmit={saveEdit}>
+                <div className="employee-card-top">
+                  <div className="avatar">{initials(emp.email)}</div>
+                  <div>
+                    <h3>{displayName(emp.email)}</h3>
+                    <p>{emp.email}</p>
+                  </div>
+                </div>
+                <div className="form-row">
+                  <label className="form-field">
+                    <span>Department</span>
+                    <select value={editing.department} onChange={(e) => setEditing({ ...editing, department: e.target.value })}>
+                      <option value="">Not set</option>
+                      {departments.map((d) => <option key={d}>{d}</option>)}
+                    </select>
+                  </label>
+                  <label className="form-field">
+                    <span>Grade</span>
+                    <input value={editing.grade} onChange={(e) => setEditing({ ...editing, grade: e.target.value })} placeholder="e.g. L3" />
+                  </label>
+                </div>
+                <div className="form-row">
+                  <label className="form-field">
+                    <span>Job title</span>
+                    <input value={editing.job_title} onChange={(e) => setEditing({ ...editing, job_title: e.target.value })} />
+                  </label>
+                  <label className="form-field">
+                    <span>City</span>
+                    <input value={editing.city} onChange={(e) => setEditing({ ...editing, city: e.target.value })} />
+                  </label>
+                </div>
+                <label className="form-field">
+                  <span>Joining date</span>
+                  <input type="date" value={editing.join_date} onChange={(e) => setEditing({ ...editing, join_date: e.target.value })} />
+                </label>
+                <div className="form-field">
+                  <span>Skills</span>
+                  <SkillsInput skills={editing.skills} onChange={(skills) => setEditing({ ...editing, skills })} />
+                </div>
+                <div className="panel-actions">
+                  <button className="return-button" type="submit" disabled={savingId === emp.id}>
+                    {savingId === emp.id ? 'Saving…' : 'Save'}
+                  </button>
+                  <button className="ghost-button" type="button" onClick={() => setEditing(null)}>Cancel</button>
+                </div>
+              </form>
+            ) : (
+              <div className="employee-card" key={emp.id}>
+                <div className="employee-card-top">
+                  <div className="avatar">{initials(emp.email)}</div>
+                  <div className="employee-card-name">
+                    <h3>{displayName(emp.email)}</h3>
+                    <p>{emp.job_title || (emp.role === 'hr_admin' ? 'HR admin' : 'Employee')}</p>
+                  </div>
+                  {emp.grade && <span className="grade-badge" title="Grade (only HR can see this)">{emp.grade}</span>}
+                </div>
+                <div className="employee-meta">
+                  {emp.department ? <span className="dept-badge">{emp.department}</span> : <span className="dept-badge dept-badge-empty">No department</span>}
+                  {emp.city && <span>📍 {emp.city}</span>}
+                  {emp.join_date && <span>⏱ {monthsOfService(emp.join_date)} mo</span>}
+                </div>
+                <SkillChips skills={emp.skills} />
+                <div className="employee-card-bottom">
+                  <span>{emp.questions_asked} question{emp.questions_asked === 1 ? '' : 's'} asked</span>
+                  <button className="activity-open-button" onClick={() => startEdit(emp)}>Edit</button>
+                </div>
+              </div>
+            ),
+          )}
+        </div>
+      )}
+    </section>
+  )
+}
+
+/* ---------- HR: insights dashboard ---------- */
+
+function BarList({ items, empty }) {
+  if (!items?.length) return <p className="form-hint">{empty}</p>
+  const max = Math.max(...items.map((i) => i.count))
+  return (
+    <div className="bar-list">
+      {items.map((item) => (
+        <div className="bar-row" key={item.label}>
+          <span className="bar-label">{item.label}</span>
+          <div className="bar-track">
+            <div className="bar-fill" style={{ width: `${Math.max((item.count / max) * 100, 4)}%` }} />
+          </div>
+          <span className="bar-count">{item.count}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function InsightsPage({ onAuthError, onAskAbout, onOpenInbox }) {
+  const [data, setData] = useState(null)
+  const [error, setError] = useState('')
+  const [refreshing, setRefreshing] = useState(false)
+
+  const load = useCallback(async () => {
+    setRefreshing(true)
+    try {
+      setData(await hrAPI.getInsights())
+      setError('')
+    } catch (err) {
+      if (err.status === 401) onAuthError()
+      setError(err.message)
+    } finally {
+      setRefreshing(false)
+    }
+  }, [onAuthError])
+
+  useEffect(() => {
+    load()
+  }, [load])
+
+  const t = data?.totals
+
+  return (
+    <section className="activity-page">
+      <div className="page-heading heading-with-action">
+        <div>
+          <span className="welcome-eyebrow">HR ADMIN</span>
+          <h1>Insights</h1>
+          <p>What employees ask, how useful the answers are, and which questions your policies don't cover yet.</p>
+        </div>
+        <button className="ghost-button" onClick={load} disabled={refreshing}>{refreshing ? 'Refreshing…' : '↻ Refresh'}</button>
+      </div>
+
+      {error && <p className="notice notice-error">{error}</p>}
+      {!data ? (
+        <p className="form-hint">Loading…</p>
+      ) : (
+        <>
+          <div className="insight-stats">
+            <div className="activity-stat">
+              <span>Questions answered</span>
+              <strong>{t.questions}</strong>
+              <p>from {t.employees_asking} {t.employees_asking === 1 ? 'person' : 'people'}</p>
+            </div>
+            <div className="activity-stat">
+              <span>Helpful rating</span>
+              <strong>{t.helpful_rate === null ? '–' : `${t.helpful_rate}%`}</strong>
+              <p>👍 {t.helpful} · 👎 {t.not_helpful}</p>
+            </div>
+            <div className="activity-stat">
+              <span>Not covered by any policy</span>
+              <strong className={t.unanswered ? 'stat-warn' : ''}>{t.unanswered}</strong>
+              <p>policy gaps to review</p>
+            </div>
+          </div>
+
+          <div className="insight-grid">
+            <div className="panel-card">
+              <h2 className="panel-title">What employees ask about</h2>
+              <p className="panel-sub">Which agent handled each question (from the DistilBERT router)</p>
+              <BarList items={data.by_intent} empty="No questions yet." />
+            </div>
+            <div className="panel-card">
+              <h2 className="panel-title">Questions by department</h2>
+              <p className="panel-sub">Where the demand for HR answers comes from</p>
+              <BarList items={data.by_department} empty="No questions yet." />
+            </div>
+          </div>
+
+          <div className="panel-card">
+            <h2 className="panel-title">⚠ Questions no policy could answer</h2>
+            <p className="panel-sub">Each one is a gap in your policies. Answer it in the HR Inbox (and teach Humanly), or add a policy that covers it.</p>
+            {data.unanswered.length === 0 ? (
+              <p className="form-hint">None so far. Every question was answered from a policy.</p>
+            ) : (
+              <ul className="insight-list">
+                {data.unanswered.map((item, i) => (
+                  <li key={i}>
+                    <span className="insight-question">“{item.question}”</span>
+                    <span className="insight-meta">
+                      {item.department} · {formatDate(item.asked_at)} ·{' '}
+                      {item.hr_replied
+                        ? <span className="replied-tag">✓ HR replied</span>
+                        : <button className="link-button" onClick={onOpenInbox}>Answer in HR Inbox →</button>}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div className="panel-card">
+            <h2 className="panel-title">👎 Answers marked not helpful</h2>
+            <p className="panel-sub">Review these to see whether the policy wording or the answer needs improving.</p>
+            {data.not_helpful.length === 0 ? (
+              <p className="form-hint">No negative ratings yet.</p>
+            ) : (
+              <ul className="insight-list">
+                {data.not_helpful.map((item, i) => (
+                  <li key={i}>
+                    <span className="insight-question">“{item.question}”</span>
+                    <span className="insight-answer">{item.answer}</span>
+                    <span className="insight-meta">
+                      {item.intent || 'unknown'} · {formatDate(item.asked_at)}
+                      {' · '}
+                      <button className="link-button" onClick={() => onAskAbout(item.question)}>Try it again →</button>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </>
+      )}
+    </section>
+  )
+}
+
+/* ---------- Ask HR privately (employee) ---------- */
+
+const requestTopics = ['Salary & payroll', 'Personal or medical', 'Workplace concern', 'Leave & attendance', 'Other']
+
+function RequestCard({ item, from, children }) {
+  return (
+    <div className={`request-card request-${item.status}`}>
+      <div className="request-top">
+        <span className={`kind-badge kind-${item.kind}`}>
+          {item.kind === 'private' ? '🔒 Private' : '✳ Humanly couldn’t answer'}
+        </span>
+        {item.topic && item.kind === 'private' && <span className="request-topic">{item.topic}</span>}
+        <span className={`status-badge status-${item.status}`}>{item.status === 'open' ? 'Waiting for HR' : 'Answered'}</span>
+        <span className="request-date">{formatDate(item.created_at)}</span>
+      </div>
+      {from}
+      <p className="request-question">{item.question}</p>
+      {item.reply && (
+        <div className="request-reply">
+          <span className="request-reply-label">HR replied · {formatDate(item.replied_at)}</span>
+          <p>{item.reply}</p>
+          {item.added_to_knowledge && <span className="taught-badge">✓ Added to Humanly’s knowledge</span>}
+        </div>
+      )}
+      {children}
+    </div>
+  )
+}
+
+function AskHRPage({ onAuthError, onSeen }) {
+  const [items, setItems] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [form, setForm] = useState({ topic: requestTopics[0], question: '' })
+  const [notice, setNotice] = useState(null)
+  const [busy, setBusy] = useState(false)
+
+  const load = useCallback(async () => {
+    try {
+      const data = await requestsAPI.mine()
+      setItems(data.items)
+      if (data.unseen) {
+        await requestsAPI.markSeen()
+        onSeen()
+      }
+    } catch (err) {
+      if (err.status === 401) onAuthError()
+    } finally {
+      setLoading(false)
+    }
+  }, [onAuthError, onSeen])
+
+  useEffect(() => {
+    load()
+  }, [load])
+
+  async function send(event) {
+    event.preventDefault()
+    setBusy(true)
+    try {
+      await requestsAPI.ask(form.topic, form.question.trim())
+      setForm({ ...form, question: '' })
+      setNotice({ kind: 'success', text: 'Sent to HR ✓ You’ll see their reply here.' })
+      await load()
+    } catch (err) {
+      if (err.status === 401) onAuthError()
+      setNotice({ kind: 'error', text: err.message })
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <section className="activity-page">
+      <div className="page-heading">
+        <span className="welcome-eyebrow">PRIVATE</span>
+        <h1>Ask HR</h1>
+        <p>For personal questions that a policy can’t answer: your salary, a medical situation, or a concern at work.</p>
+      </div>
+
+      <form className="panel-card" onSubmit={send}>
+        <div className="privacy-banner">
+          <span>🔒</span>
+          <p>
+            <strong>This goes only to the HR team, never to the AI.</strong> It is tagged with your department so the
+            right HR person picks it up.
+          </p>
+        </div>
+        <label className="form-field">
+          <span>Topic</span>
+          <select value={form.topic} onChange={(e) => setForm({ ...form, topic: e.target.value })}>
+            {requestTopics.map((t) => <option key={t}>{t}</option>)}
+          </select>
+        </label>
+        <label className="form-field">
+          <span>Your question</span>
+          <textarea
+            className="form-textarea"
+            required
+            rows={4}
+            value={form.question}
+            onChange={(e) => setForm({ ...form, question: e.target.value })}
+            placeholder="e.g. My October salary was credited without the travel reimbursement. Who should I contact?"
+          />
+        </label>
+        <div className="panel-actions">
+          <button className="return-button" type="submit" disabled={busy || !form.question.trim()}>
+            {busy ? 'Sending…' : 'Send to HR →'}
+          </button>
+        </div>
+        {notice && <p className={`notice notice-${notice.kind}`}>{notice.text}</p>}
+      </form>
+
+      <div className="activity-list">
+        <div className="activity-list-heading">
+          <h2>My requests</h2>
+          <span>{items.length}</span>
+        </div>
+        {loading ? (
+          <p className="form-hint">Loading…</p>
+        ) : items.length === 0 ? (
+          <div className="activity-empty">
+            <span>✉</span>
+            <h3>No requests yet</h3>
+            <p>Questions Humanly can’t answer are also sent to HR automatically and appear here.</p>
+          </div>
+        ) : (
+          items.map((item) => <RequestCard key={item.id} item={item} />)
+        )}
+      </div>
+    </section>
+  )
+}
+
+/* ---------- HR Inbox (HR) ---------- */
+
+function InboxReplyForm({ item, onSent, onAuthError }) {
+  const [reply, setReply] = useState('')
+  const [teach, setTeach] = useState(item.kind !== 'private')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+
+  async function send(event) {
+    event.preventDefault()
+    setBusy(true)
+    setError('')
+    try {
+      onSent(await requestsAPI.reply(item.id, reply.trim(), teach && item.kind !== 'private'))
+    } catch (err) {
+      if (err.status === 401) onAuthError()
+      setError(err.message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <form className="inbox-reply" onSubmit={send}>
+      <textarea
+        className="form-textarea"
+        rows={3}
+        required
+        value={reply}
+        onChange={(e) => setReply(e.target.value)}
+        placeholder="Write your reply to the employee…"
+      />
+      <div className="inbox-reply-actions">
+        {item.kind === 'private' ? (
+          <span className="form-hint">🔒 Private: this reply is never added to Humanly’s knowledge.</span>
+        ) : (
+          <label className="teach-toggle">
+            <input type="checkbox" checked={teach} onChange={(e) => setTeach(e.target.checked)} />
+            <span>
+              <strong>Teach Humanly this answer</strong> so it can answer this question itself next time
+            </span>
+          </label>
+        )}
+        <button className="return-button" type="submit" disabled={busy || !reply.trim()}>
+          {busy ? 'Sending…' : 'Send reply'}
+        </button>
+      </div>
+      {error && <p className="notice notice-error">{error}</p>}
+    </form>
+  )
+}
+
+function HRInboxPage({ onAuthError }) {
+  const [items, setItems] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [status, setStatus] = useState('open')
+  const [department, setDepartment] = useState('')
+
+  const load = useCallback(async () => {
+    try {
+      setItems(await requestsAPI.inbox({ department }))
+    } catch (err) {
+      if (err.status === 401) onAuthError()
+    } finally {
+      setLoading(false)
+    }
+  }, [department, onAuthError])
+
+  useEffect(() => {
+    load()
+  }, [load])
+
+  const counts = {
+    open: items.filter((i) => i.status === 'open').length,
+    answered: items.filter((i) => i.status === 'answered').length,
+    taught: items.filter((i) => i.added_to_knowledge).length,
+  }
+  const visible = items.filter((i) => !status || i.status === status)
+
+  return (
+    <section className="activity-page">
+      <div className="page-heading">
+        <span className="welcome-eyebrow">HR ADMIN</span>
+        <h1>HR Inbox</h1>
+        <p>
+          Private questions from employees, plus every question Humanly couldn’t answer from a policy. Teach Humanly
+          your answer and it will answer that question itself next time.
+        </p>
+      </div>
+
+      <div className="activity-stats">
+        <div className="activity-stat">
+          <span>Waiting for a reply</span>
+          <strong className={counts.open ? 'stat-warn' : ''}>{counts.open}</strong>
+        </div>
+        <div className="activity-stat">
+          <span>Answered</span>
+          <strong>{counts.answered}</strong>
+        </div>
+        <div className="activity-stat">
+          <span>Taught to Humanly</span>
+          <strong>{counts.taught}</strong>
+        </div>
+      </div>
+
+      <div className="directory-toolbar">
+        <div className="tab-row">
+          {[['open', 'Open'], ['answered', 'Answered'], ['', 'All']].map(([value, label]) => (
+            <button key={label} className={`tab-button ${status === value ? 'tab-active' : ''}`} onClick={() => setStatus(value)}>
+              {label}
+            </button>
+          ))}
+        </div>
+        <select className="directory-filter" value={department} onChange={(e) => setDepartment(e.target.value)}>
+          <option value="">All departments</option>
+          {departments.map((d) => <option key={d}>{d}</option>)}
+        </select>
+      </div>
+
+      {loading ? (
+        <p className="form-hint">Loading…</p>
+      ) : visible.length === 0 ? (
+        <div className="activity-empty">
+          <span>✓</span>
+          <h3>{status === 'open' ? 'Inbox zero' : 'Nothing here'}</h3>
+          <p>{status === 'open' ? 'Every request has been answered.' : 'No requests match this filter.'}</p>
+        </div>
+      ) : (
+        visible.map((item) => (
+          <RequestCard
+            key={item.id}
+            item={item}
+            from={
+              <div className="request-from">
+                <div className="avatar">{initials(item.employee.email)}</div>
+                <div>
+                  <strong>{displayName(item.employee.email)}</strong>
+                  <span>{[item.employee.job_title, item.department].filter(Boolean).join(' · ') || item.employee.email}</span>
+                </div>
+              </div>
+            }
+          >
+            {item.status === 'open' && (
+              <InboxReplyForm
+                item={item}
+                onAuthError={onAuthError}
+                onSent={(updated) => setItems((list) => list.map((i) => (i.id === updated.id ? { ...i, ...updated } : i)))}
+              />
+            )}
+          </RequestCard>
+        ))
+      )}
+    </section>
+  )
+}
+
+/* ---------- Holiday calendar and leave planner ---------- */
+
+const weekdayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+
+function isoDay(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+function parseDay(value) {
+  const [y, m, d] = value.split('-').map(Number)
+  return new Date(y, m - 1, d)
+}
+
+function niceDay(value) {
+  return parseDay(value).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })
+}
+
+// Works out which days are deducted, following Leave Policy sections 3, 5 and 11 (sandwich rule)
+function planLeave(from, to, type, holidayByDay) {
+  if (!from || !to || to < from) return null
+  const days = []
+  for (let d = parseDay(from); isoDay(d) <= to; d.setDate(d.getDate() + 1)) {
+    const key = isoDay(d)
+    const holiday = holidayByDay[key]
+    const weekend = d.getDay() === 0 || d.getDay() === 6
+    const off = weekend || holiday?.kind === 'fixed' // optional holidays are working days
+    days.push({ key, off, reason: holiday?.kind === 'fixed' ? holiday.name : weekend ? 'Weekend' : null })
+  }
+  const working = days.filter((d) => !d.off)
+  if (!working.length) return { days, working: 0, counted: 0, sandwiched: [], status: {}, warnings: ['There are no working days in these dates.'] }
+
+  const first = working[0].key
+  const last = working[working.length - 1].key
+  const sandwichApplies = type === 'casual'
+  const sandwiched = sandwichApplies ? days.filter((d) => d.off && d.key > first && d.key < last) : []
+  const status = {}
+  days.forEach((d) => {
+    if (!d.off) status[d.key] = 'leave'
+    else if (sandwiched.includes(d)) status[d.key] = 'sandwich'
+    else status[d.key] = 'free'
+  })
+
+  const warnings = []
+  if (type === 'casual' && working.length > 3) warnings.push('Casual leave can’t be more than 3 consecutive days (Leave Policy, section 3).')
+  if (type === 'earned') {
+    if (working.length < 2) warnings.push('Earned leave must be at least 2 days per application (section 5).')
+    const notice = new Date()
+    notice.setDate(notice.getDate() + 14)
+    if (from < isoDay(notice)) warnings.push('Earned leave must be applied for at least 14 days in advance (section 5).')
+  }
+  if (type === 'sick' && working.length >= 3) warnings.push('3 or more days of sick leave need a medical certificate (section 4).')
+
+  return { days, working: working.length, counted: working.length + sandwiched.length, sandwiched, status, warnings }
+}
+
+const plannerExamples = [
+  { label: 'Fri + Mon (weekend between)', type: 'casual', from: '2026-12-11', to: '2026-12-14' },
+  { label: 'Around Christmas', type: 'casual', from: '2026-12-24', to: '2026-12-28' },
+  { label: 'Same dates, earned leave', type: 'earned', from: '2026-12-24', to: '2026-12-28' },
+]
+
+function CalendarPage({ isHR, onAuthError }) {
+  const today = isoDay(new Date())
+  const [holidays, setHolidays] = useState([])
+  const [month, setMonth] = useState(() => {
+    const now = new Date()
+    return new Date(now.getFullYear(), now.getMonth(), 1)
+  })
+  const [plan, setPlan] = useState({ type: 'casual', from: '', to: '' })
+  const [newHoliday, setNewHoliday] = useState({ day: '', name: '', kind: 'fixed' })
+  const [error, setError] = useState('')
+
+  const load = useCallback(async () => {
+    try {
+      setHolidays(await holidaysAPI.list())
+    } catch (err) {
+      if (err.status === 401) onAuthError()
+      setError(err.message)
+    }
+  }, [onAuthError])
+
+  useEffect(() => {
+    load()
+  }, [load])
+
+  const holidayByDay = Object.fromEntries(holidays.map((h) => [h.day, h]))
+  const result = planLeave(plan.from, plan.to, plan.type, holidayByDay)
+
+  function setPlanAndShow(next) {
+    setPlan(next)
+    if (next.from) {
+      const d = parseDay(next.from)
+      setMonth(new Date(d.getFullYear(), d.getMonth(), 1))
+    }
+  }
+
+  // Monday-first grid for the shown month
+  const cells = []
+  const lead = (month.getDay() + 6) % 7
+  for (let i = 0; i < lead; i += 1) cells.push(null)
+  const daysInMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate()
+  for (let d = 1; d <= daysInMonth; d += 1) cells.push(isoDay(new Date(month.getFullYear(), month.getMonth(), d)))
+
+  const upcoming = holidays.filter((h) => h.day >= today).slice(0, 6)
+
+  async function addHoliday(event) {
+    event.preventDefault()
+    try {
+      await holidaysAPI.add(newHoliday.day, newHoliday.name.trim(), newHoliday.kind)
+      setNewHoliday({ day: '', name: '', kind: 'fixed' })
+      setError('')
+      await load()
+    } catch (err) {
+      if (err.status === 401) onAuthError()
+      setError(err.message)
+    }
+  }
+
+  async function removeHoliday(h) {
+    if (!window.confirm(`Remove ${h.name} (${niceDay(h.day)}) from the calendar?`)) return
+    try {
+      await holidaysAPI.remove(h.id)
+      await load()
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  return (
+    <section className="activity-page calendar-page">
+      <div className="page-heading">
+        <span className="welcome-eyebrow">HOLIDAYS & LEAVE</span>
+        <h1>Holiday calendar</h1>
+        <p>Company holidays for the year, and a leave planner that shows exactly how many days will be deducted, including the sandwich rule.</p>
+      </div>
+
+      {error && <p className="notice notice-error">{error}</p>}
+
+      <div className="calendar-layout">
+        <div className="panel-card calendar-card">
+          <div className="calendar-head">
+            <button className="ghost-button" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))} aria-label="Previous month">‹</button>
+            <h2>{month.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</h2>
+            <button className="ghost-button" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))} aria-label="Next month">›</button>
+          </div>
+          <div className="calendar-grid">
+            {weekdayNames.map((w) => <span key={w} className="calendar-weekday">{w}</span>)}
+            {cells.map((key, i) => {
+              if (!key) return <span key={`blank-${i}`} />
+              const h = holidayByDay[key]
+              const dow = parseDay(key).getDay()
+              const classes = [
+                'calendar-day',
+                (dow === 0 || dow === 6) && 'calendar-weekend',
+                h && `calendar-${h.kind}`,
+                key === today && 'calendar-today',
+                result?.status[key] && `plan-${result.status[key]}`,
+              ].filter(Boolean).join(' ')
+              return (
+                <div key={key} className={classes} title={h ? `${h.name} (${h.kind})` : ''}>
+                  <span className="calendar-num">{parseDay(key).getDate()}</span>
+                  {h && <span className="calendar-label">{h.name}</span>}
+                </div>
+              )
+            })}
+          </div>
+          <div className="calendar-legend">
+            <span><i className="dot dot-fixed" /> Fixed holiday</span>
+            <span><i className="dot dot-optional" /> Optional holiday</span>
+            <span><i className="dot dot-leave" /> Leave day</span>
+            <span><i className="dot dot-sandwich" /> Sandwiched (counted)</span>
+          </div>
+        </div>
+
+        <div className="calendar-side">
+          <div className="panel-card">
+            <h2 className="panel-title">Plan your leave</h2>
+            <p className="panel-sub">Pick dates to see how many days are deducted.</p>
+            <label className="form-field">
+              <span>Leave type</span>
+              <select value={plan.type} onChange={(e) => setPlan({ ...plan, type: e.target.value })}>
+                <option value="casual">Casual leave</option>
+                <option value="earned">Earned leave</option>
+                <option value="sick">Sick leave</option>
+              </select>
+            </label>
+            <div className="form-row">
+              <label className="form-field">
+                <span>From</span>
+                <input type="date" value={plan.from} onChange={(e) => setPlanAndShow({ ...plan, from: e.target.value, to: plan.to && plan.to >= e.target.value ? plan.to : e.target.value })} />
+              </label>
+              <label className="form-field">
+                <span>To</span>
+                <input type="date" value={plan.to} min={plan.from} onChange={(e) => setPlan({ ...plan, to: e.target.value })} />
+              </label>
+            </div>
+            <div className="example-row">
+              <span>Try:</span>
+              {plannerExamples.map((ex) => (
+                <button key={ex.label} className="chip-button" onClick={() => setPlanAndShow({ type: ex.type, from: ex.from, to: ex.to })}>
+                  {ex.label}
+                </button>
+              ))}
+            </div>
+
+            {result && (
+              <div className="plan-result">
+                <div className="plan-total">
+                  <strong>{result.counted}</strong>
+                  <span>day{result.counted === 1 ? '' : 's'} of {plan.type} leave deducted</span>
+                </div>
+                <p className="plan-line">{result.working} working day{result.working === 1 ? '' : 's'} off work</p>
+                {result.sandwiched.length > 0 && (
+                  <p className="plan-line plan-sandwich">
+                    🥪 Sandwich rule: +{result.sandwiched.length} ({result.sandwiched.map((d) => `${niceDay(d.key)}${d.reason !== 'Weekend' ? ` – ${d.reason}` : ''}`).join(', ')})
+                  </p>
+                )}
+                {plan.type !== 'casual' && result.days.some((d) => d.off) && (
+                  <p className="plan-line">Weekends and fixed holidays in between are not counted for {plan.type} leave.</p>
+                )}
+                {result.warnings.map((w) => <p key={w} className="plan-warning">⚠ {w}</p>)}
+              </div>
+            )}
+          </div>
+
+          <div className="panel-card">
+            <h2 className="panel-title">Upcoming holidays</h2>
+            {upcoming.length === 0 ? (
+              <p className="form-hint">No more holidays this year.</p>
+            ) : (
+              <ul className="holiday-list">
+                {upcoming.map((h) => (
+                  <li key={h.id}>
+                    <span className={`dot dot-${h.kind}`} />
+                    <span className="holiday-name">{h.name}</span>
+                    <span className="holiday-date">{niceDay(h.day)}</span>
+                    {isHR && <button className="holiday-remove" onClick={() => removeHoliday(h)} aria-label={`Remove ${h.name}`}>×</button>}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {isHR && (
+            <form className="panel-card" onSubmit={addHoliday}>
+              <h2 className="panel-title">Add a holiday</h2>
+              <label className="form-field">
+                <span>Name</span>
+                <input required value={newHoliday.name} onChange={(e) => setNewHoliday({ ...newHoliday, name: e.target.value })} placeholder="e.g. Kannada Rajyotsava" />
+              </label>
+              <div className="form-row">
+                <label className="form-field">
+                  <span>Date</span>
+                  <input required type="date" value={newHoliday.day} onChange={(e) => setNewHoliday({ ...newHoliday, day: e.target.value })} />
+                </label>
+                <label className="form-field">
+                  <span>Type</span>
+                  <select value={newHoliday.kind} onChange={(e) => setNewHoliday({ ...newHoliday, kind: e.target.value })}>
+                    <option value="fixed">Fixed</option>
+                    <option value="optional">Optional</option>
+                  </select>
+                </label>
+              </div>
+              <button className="return-button" type="submit">Add holiday</button>
+            </form>
+          )}
+        </div>
+      </div>
     </section>
   )
 }
@@ -506,6 +1509,7 @@ function App() {
   const [policySearch, setPolicySearch] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const [helpOpen, setHelpOpen] = useState(false)
+  const [unseenReplies, setUnseenReplies] = useState(0)
   const messagesEndRef = useRef(null)
 
   const activeConversation = conversations.find(
@@ -556,6 +1560,18 @@ function App() {
     if (user) loadConversations()
   }, [user, loadConversations])
 
+  // Employees: how many HR replies they haven't read yet (badge on "Ask HR")
+  const checkReplies = useCallback(() => {
+    if (!user || user.role === 'hr_admin') return
+    requestsAPI.mine().then((data) => setUnseenReplies(data.unseen)).catch(() => {})
+  }, [user])
+
+  useEffect(() => {
+    checkReplies()
+  }, [checkReplies, activePage])
+
+  const clearReplies = useCallback(() => setUnseenReplies(0), [])
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, liveSteps, isTyping])
@@ -581,6 +1597,8 @@ function App() {
           role: item.sender,
           content: item.content,
           citations: item.citations || [],
+          messageId: item.sender === 'assistant' ? item.id : null,
+          feedback: item.feedback ?? null,
         })),
       )
     } catch (err) {
@@ -612,6 +1630,8 @@ function App() {
           content: result.answer,
           citations: result.citations,
           trace: result.trace,
+          messageId: result.message_id,
+          feedback: null,
         },
       ])
       if (!activeConversationId) {
@@ -647,6 +1667,10 @@ function App() {
     }
     setConversations((previous) => previous.filter((conversation) => conversation.id !== conversationId))
     if (activeConversationId === conversationId) startNewChat()
+  }
+
+  function setFeedback(id, value) {
+    setMessages((previous) => previous.map((item) => (item.id === id ? { ...item, feedback: value } : item)))
   }
 
   function goTo(page) {
@@ -747,10 +1771,44 @@ function App() {
             <span>My activity</span>
           </button>
 
+          <button className={`nav-item ${activePage === 'Holiday calendar' ? 'nav-active' : ''}`} onClick={() => goTo('Holiday calendar')}>
+            <span className="nav-icon">▦</span>
+            <span>Holiday calendar</span>
+          </button>
+
+          {!isHR && (
+            <button className={`nav-item ${activePage === 'Ask HR' ? 'nav-active' : ''}`} onClick={() => goTo('Ask HR')}>
+              <span className="nav-icon">✉</span>
+              <span>Ask HR</span>
+              {unseenReplies > 0 && <span className="nav-badge">{unseenReplies}</span>}
+            </button>
+          )}
+
           {isHR && (
             <button className={`nav-item ${activePage === 'Manage policies' ? 'nav-active' : ''}`} onClick={() => goTo('Manage policies')}>
               <span className="nav-icon">⇪</span>
               <span>Manage policies</span>
+            </button>
+          )}
+
+          {isHR && (
+            <button className={`nav-item ${activePage === 'HR Inbox' ? 'nav-active' : ''}`} onClick={() => goTo('HR Inbox')}>
+              <span className="nav-icon">✉</span>
+              <span>HR Inbox</span>
+            </button>
+          )}
+
+          {isHR && (
+            <button className={`nav-item ${activePage === 'Employees' ? 'nav-active' : ''}`} onClick={() => goTo('Employees')}>
+              <span className="nav-icon">☺</span>
+              <span>Employees</span>
+            </button>
+          )}
+
+          {isHR && (
+            <button className={`nav-item ${activePage === 'Insights' ? 'nav-active' : ''}`} onClick={() => goTo('Insights')}>
+              <span className="nav-icon">▥</span>
+              <span>Insights</span>
             </button>
           )}
         </div>
@@ -804,7 +1862,7 @@ function App() {
             <div className="avatar">{initials(user.email)}</div>
             <div className="profile-copy">
               <span className="profile-name">{displayName(user.email)}</span>
-              <span className="profile-role">{isHR ? 'HR admin' : 'Employee workspace'}</span>
+              <span className="profile-role">{isHR ? 'HR admin' : user.department || 'Employee workspace'}</span>
             </div>
             <span className="profile-menu">···</span>
           </button>
@@ -908,8 +1966,17 @@ function App() {
                     <div className={`message-body ${item.error ? 'message-error' : ''}`}>
                       <span className="message-author">{item.role === 'user' ? 'You' : 'HUMANLY'}</span>
                       <p>{item.content}</p>
+                      {item.role === 'assistant' && item.content?.startsWith("This isn't covered") && (
+                        <p className="sent-to-hr">
+                          📨 Sent to HR automatically.{' '}
+                          {!isHR && <button className="link-button" onClick={() => goTo('Ask HR')}>You’ll see their reply in Ask HR →</button>}
+                        </p>
+                      )}
                       {item.role === 'assistant' && <Citations citations={item.citations} />}
                       {item.role === 'assistant' && <AgentTrace steps={item.trace} />}
+                      {item.role === 'assistant' && !item.error && (
+                        <Feedback messageId={item.messageId} value={item.feedback} onChange={(value) => setFeedback(item.id, value)} />
+                      )}
                     </div>
                   </article>
                 ))}
@@ -977,6 +2044,16 @@ function App() {
           </section>
         ) : activePage === 'Manage policies' && isHR ? (
           <ManagePoliciesPage onAuthError={logout} />
+        ) : activePage === 'Employees' && isHR ? (
+          <EmployeesPage onAuthError={logout} />
+        ) : activePage === 'Insights' && isHR ? (
+          <InsightsPage onAuthError={logout} onAskAbout={(question) => { startNewChat(); setMessage(question) }} onOpenInbox={() => goTo('HR Inbox')} />
+        ) : activePage === 'HR Inbox' && isHR ? (
+          <HRInboxPage onAuthError={logout} />
+        ) : activePage === 'Ask HR' && !isHR ? (
+          <AskHRPage onAuthError={logout} onSeen={clearReplies} />
+        ) : activePage === 'Holiday calendar' ? (
+          <CalendarPage isHR={isHR} onAuthError={logout} />
         ) : activePage === 'My profile' ? (
           <ProfilePage user={user} onSaved={setUser} onLogout={logout} />
         ) : (
@@ -997,8 +2074,8 @@ function App() {
                 <strong>{monthsOfService(user.join_date) ?? '–'}</strong>
               </div>
               <div className="activity-stat">
-                <span>Grade · City</span>
-                <strong className="stat-small">{[user.grade, user.city].filter(Boolean).join(' · ') || '–'}</strong>
+                <span>Department · City</span>
+                <strong className="stat-small">{[user.department, user.city].filter(Boolean).join(' · ') || '–'}</strong>
               </div>
             </div>
 

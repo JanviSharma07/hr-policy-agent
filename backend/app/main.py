@@ -7,7 +7,7 @@ from app.db.database import Base, engine, SessionLocal
 from app.db import models  # noqa: F401  (registers the tables)
 from app.db.migrate import run_migrations
 from app.retrieval.vector_store import sync_document_chunks
-from app.routes import auth, documents, search, chat
+from app.routes import auth, documents, search, chat, hr, hr_requests, holidays
 from app.seed import seed_demo
 
 # --- Startup: tables, new columns, and ChromaDB kept in step with PostgreSQL ---
@@ -17,6 +17,7 @@ with SessionLocal() as db:
     for doc in db.query(models.Document).all():
         sync_document_chunks(doc.id, doc.family_id, doc.is_active)
     seed_demo(db)  # hosted demo only (SEED_DEMO=1): test accounts + sample policies
+    holidays.seed_holidays(db)  # 2026 holiday calendar, first start only
 
 # Load the embedding and reranker models now, so the first question isn't slow
 from app.retrieval.embeddings import get_model  # noqa: E402
@@ -41,6 +42,9 @@ app.include_router(auth.router)
 app.include_router(documents.router)
 app.include_router(search.router)
 app.include_router(chat.router)
+app.include_router(hr.router)
+app.include_router(hr_requests.router)
+app.include_router(holidays.router)
 
 
 @app.get("/health")

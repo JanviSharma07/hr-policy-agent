@@ -22,7 +22,7 @@ FOLLOW_UP = re.compile(r"^(and|also|what about|how about|yes|no|yeah|yep|nope|ok
 class AgentState(TypedDict, total=False):
     question: str            # what the employee typed
     history: list[dict]      # earlier messages in this chat
-    profile: dict            # join_date, grade, city of the logged-in employee
+    profile: dict            # join_date, grade, city, department, job title of the employee
     standalone: str          # question after the memory agent resolved follow-ups
     intent: str
     chunks: list[dict]
@@ -59,6 +59,10 @@ def _profile_text(profile: dict | None) -> str:
                      f"of service as of {date.today().isoformat()}")
     if profile.get("grade"):
         parts.append(f"grade {profile['grade']}")
+    if profile.get("department"):
+        parts.append(f"works in the {profile['department']} department")
+    if profile.get("job_title"):
+        parts.append(f"job title {profile['job_title']}")
     if profile.get("city"):
         parts.append(f"based in {profile['city']}")
     return "Employee profile: " + ("; ".join(parts) if parts else "not provided") + "."
@@ -77,7 +81,9 @@ def _excerpt_prompt(state: AgentState, with_profile: bool = False) -> str:
     if history:  # so an answer to an earlier clarifying question isn't lost
         lines = "\n".join(f"{m['sender']}: {m['content']}" for m in history[-4:])
         chat = f"Earlier in this chat (use it for details the employee already gave):\n{lines}\n\n"
-    return f"Policy excerpts:\n\n{excerpts}\n\n{profile}{chat}Employee question: {state['question']}"
+    # Today's date lets agents work out "next weekend", "this Friday" or "from Monday"
+    today = f"Today is {date.today().strftime('%A, %d %B %Y')}.\n\n"
+    return f"Policy excerpts:\n\n{excerpts}\n\n{profile}{chat}{today}Employee question: {state['question']}"
 
 
 # ---------- Memory ----------

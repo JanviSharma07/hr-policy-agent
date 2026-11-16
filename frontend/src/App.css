@@ -2085,3 +2085,986 @@ button:disabled {
   font-weight: 600;
   text-align: left;
 }
+
+/* =========================================================
+   NEW: skills profile, answer feedback, HR employees & insights
+   ========================================================= */
+
+.form-field select,
+.directory-filter {
+  min-width: 0;
+  min-height: 40px;
+  padding: 9px 12px;
+  border: 1px solid #e0e7df;
+  border-radius: 9px;
+  outline: 0;
+  color: #37443a;
+  background: #fff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.form-field select:focus,
+.directory-filter:focus {
+  border-color: #a9c7b0;
+  box-shadow: 0 0 0 3px rgba(49, 92, 73, 0.07);
+}
+
+.field-note {
+  margin-left: 6px;
+  color: #9aa59c;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 500;
+}
+
+.panel-sub {
+  margin: -4px 0 16px;
+  color: #849087;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+/* Feedback under each answer */
+.feedback-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 9px;
+  border-top: 1px dashed #e3e9e2;
+}
+
+.feedback-label {
+  margin-right: 4px;
+  color: #8a968c;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.feedback-button {
+  display: grid;
+  width: 30px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid #e0e7df;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  filter: grayscale(1);
+  opacity: 0.7;
+  transition: all 0.15s ease;
+}
+
+.feedback-button:hover:not(:disabled) {
+  filter: none;
+  opacity: 1;
+  transform: translateY(-1px);
+}
+
+.feedback-up {
+  border-color: #7fae8c;
+  background: #dcecdf;
+  filter: none;
+  opacity: 1;
+}
+
+.feedback-down {
+  border-color: #e2998a;
+  background: #fbe1db;
+  filter: none;
+  opacity: 1;
+}
+
+/* Skills */
+.skills-input {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-height: 42px;
+  padding: 6px 8px;
+  border: 1px solid #e0e7df;
+  border-radius: 9px;
+  background: #fff;
+}
+
+.skills-input:focus-within {
+  border-color: #a9c7b0;
+  box-shadow: 0 0 0 3px rgba(49, 92, 73, 0.07);
+}
+
+.form-field .skills-input input {
+  flex: 1;
+  min-width: 140px;
+  min-height: 28px;
+  padding: 4px;
+  border: 0;
+  box-shadow: none;
+}
+
+.skill-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.skill-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid #dce9df;
+  border-radius: 999px;
+  color: var(--green);
+  background: var(--green-light);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.skill-chip button {
+  padding: 0 0 0 2px;
+  border: 0;
+  color: #7d9886;
+  background: none;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.skill-chip button:hover {
+  color: #9a3b2c;
+}
+
+/* Profile header */
+.profile-hero {
+  display: flex;
+  text-align: left;
+  align-items: flex-start;
+  gap: 20px;
+  background: linear-gradient(135deg, #f1f7f2 0%, #ffffff 60%);
+}
+
+.profile-hero-avatar {
+  display: grid;
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--green);
+  font-family: 'Manrope', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  box-shadow: 0 6px 16px rgba(49, 92, 73, 0.25);
+}
+
+.profile-hero-copy h2 {
+  margin: 2px 0 2px;
+  color: #2c3a30;
+  font-family: 'Manrope', sans-serif;
+  font-size: 22px;
+}
+
+.profile-hero-title {
+  margin: 0 0 10px;
+  color: #5d6a60;
+  font-size: 13px;
+}
+
+.profile-hero-meta,
+.employee-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  color: #6d7d71;
+  font-size: 11px;
+}
+
+.dept-badge {
+  padding: 3px 10px;
+  border-radius: 999px;
+  color: #fff;
+  background: var(--green);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.dept-badge-empty {
+  color: #8a968c;
+  background: #eef1ed;
+}
+
+.grade-badge {
+  margin-left: auto;
+  padding: 3px 8px;
+  border: 1px solid #eadcb9;
+  border-radius: 6px;
+  color: #8a6a2c;
+  background: #fbf6ea;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* Employee directory */
+.directory-toolbar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.directory-search {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.directory-filter {
+  min-width: 180px;
+  border-radius: 10px;
+}
+
+.employee-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 14px;
+}
+
+.employee-card {
+  display: flex;
+  text-align: left;
+  flex-direction: column;
+  gap: 4px;
+  padding: 18px;
+  border: 1px solid #e5e9e4;
+  border-radius: 12px;
+  background: #fff;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.employee-card:hover {
+  box-shadow: 0 8px 22px rgba(39, 53, 46, 0.07);
+  transform: translateY(-1px);
+}
+
+.employee-card-editing {
+  grid-column: 1 / -1;
+  border-color: #a9c7b0;
+}
+
+.employee-card-editing:hover {
+  transform: none;
+}
+
+.employee-card-top {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 8px;
+}
+
+.employee-card-top h3 {
+  margin: 0;
+  color: #2c3a30;
+  font-size: 14px;
+}
+
+.employee-card-top p {
+  margin: 1px 0 0;
+  color: #7e8980;
+  font-size: 11px;
+}
+
+.employee-card-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 12px;
+  color: #8a968c;
+  font-size: 10px;
+}
+
+/* Insights */
+.heading-with-action {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.heading-with-action > div {
+  flex: 1;
+}
+
+.insight-list li,
+.panel-card .bar-list,
+.panel-sub,
+.insight-grid .panel-title {
+  text-align: left;
+}
+
+.insight-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.stat-warn {
+  color: #b5562f !important;
+}
+
+.insight-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.insight-grid .panel-card {
+  margin-bottom: 20px;
+}
+
+.bar-list {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.bar-row {
+  display: grid;
+  grid-template-columns: 130px 1fr 28px;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+}
+
+.bar-label {
+  overflow: hidden;
+  color: #4f5f53;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bar-track {
+  height: 10px;
+  border-radius: 999px;
+  background: #eef2ed;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #4f8a6b, var(--green));
+  transition: width 0.5s ease;
+}
+
+.bar-count {
+  color: var(--green);
+  font-weight: 700;
+  text-align: right;
+}
+
+.insight-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.insight-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 11px 14px;
+  border: 1px solid #edf0ec;
+  border-left: 3px solid #d9a25b;
+  border-radius: 8px;
+  background: #fcfcfa;
+}
+
+.insight-question {
+  color: #2c3a30;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.insight-answer {
+  color: #6d7d71;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.insight-meta {
+  color: #9aa59c;
+  font-size: 10px;
+}
+
+.link-button {
+  padding: 0;
+  border: 0;
+  color: var(--green);
+  background: none;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@media (max-width: 760px) {
+  .insight-stats,
+  .insight-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .directory-toolbar,
+  .heading-with-action {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .profile-hero {
+    flex-direction: column;
+  }
+}
+
+/* =========================================================
+   NEW: HR Inbox, Ask HR, holiday calendar and leave planner
+   ========================================================= */
+
+.form-textarea {
+  width: 100%;
+  min-height: 90px;
+  padding: 10px 12px;
+  border: 1px solid #e0e7df;
+  border-radius: 9px;
+  outline: 0;
+  color: #37443a;
+  background: #fff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.form-textarea:focus {
+  border-color: #a9c7b0;
+  box-shadow: 0 0 0 3px rgba(49, 92, 73, 0.07);
+}
+
+.nav-badge {
+  display: grid;
+  min-width: 18px;
+  height: 18px;
+  margin-left: auto;
+  padding: 0 5px;
+  place-items: center;
+  border-radius: 999px;
+  color: #fff;
+  background: #c2552f;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.sent-to-hr {
+  margin-top: 8px !important;
+  color: #8a6a2c;
+  font-size: 11px;
+}
+
+.replied-tag {
+  color: #2f6b45;
+  font-weight: 700;
+}
+
+.privacy-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border: 1px solid #dce9df;
+  border-radius: 10px;
+  background: var(--green-light);
+  text-align: left;
+}
+
+.privacy-banner span {
+  font-size: 18px;
+}
+
+.privacy-banner p {
+  margin: 0;
+  color: #4f5f53;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.privacy-banner strong {
+  color: var(--green);
+}
+
+/* Request cards (Ask HR and HR Inbox) */
+.request-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 18px;
+  border: 1px solid #e5e9e4;
+  border-left: 4px solid #d9a25b;
+  border-radius: 12px;
+  background: #fff;
+  text-align: left;
+}
+
+.request-answered {
+  border-left-color: #6fa283;
+}
+
+.request-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.kind-badge,
+.status-badge,
+.request-topic {
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.kind-private {
+  color: #5b3f8a;
+  background: #f1ebfa;
+}
+
+.kind-unanswered {
+  color: var(--green);
+  background: var(--green-light);
+}
+
+.request-topic {
+  color: #5d6a60;
+  background: #f1f3f0;
+}
+
+.status-badge {
+  margin-left: auto;
+}
+
+.status-open {
+  color: #8a5a1c;
+  background: #fbf0dd;
+}
+
+.status-answered {
+  color: #2f6b45;
+  background: #e3f1e7;
+}
+
+.request-date {
+  color: #9aa59c;
+  font-size: 10px;
+}
+
+.request-question {
+  margin: 0;
+  color: #2c3a30;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.request-reply {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #f4f8f5;
+}
+
+.request-reply-label {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--green);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.request-reply p {
+  margin: 0;
+  color: #37443a;
+  font-size: 12px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.taught-badge {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  color: #fff;
+  background: var(--green);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.request-from {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.request-from strong {
+  display: block;
+  color: #2c3a30;
+  font-size: 13px;
+}
+
+.request-from span {
+  color: #7e8980;
+  font-size: 11px;
+}
+
+.inbox-reply {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #e3e9e2;
+}
+
+.inbox-reply-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.teach-toggle {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  max-width: 520px;
+  padding: 8px 12px;
+  border: 1px solid #cfe3d4;
+  border-radius: 9px;
+  color: #4f5f53;
+  background: #f4f9f5;
+  font-size: 11px;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.teach-toggle input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--green);
+}
+
+.teach-toggle strong {
+  color: var(--green);
+}
+
+.tab-row {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+}
+
+.tab-button {
+  padding: 9px 16px;
+  border: 1px solid #e0e7df;
+  border-radius: 999px;
+  color: #5d6a60;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tab-active {
+  border-color: var(--green);
+  color: #fff;
+  background: var(--green);
+}
+
+/* Holiday calendar */
+.calendar-page {
+  width: min(100% - 64px, 1080px);
+}
+
+.calendar-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(280px, 1fr);
+  gap: 16px;
+  align-items: start;
+  text-align: left;
+}
+
+.calendar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.calendar-head h2 {
+  margin: 0;
+  color: #2c3a30;
+  font-family: 'Manrope', sans-serif;
+  font-size: 18px;
+}
+
+.calendar-head .ghost-button {
+  padding: 6px 14px;
+  font-size: 16px;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.calendar-weekday {
+  padding-bottom: 4px;
+  color: #8a968c;
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.calendar-day {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 66px;
+  padding: 6px 7px;
+  border: 1px solid #edf0ec;
+  border-radius: 8px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.calendar-num {
+  color: #37443a;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.calendar-label {
+  color: inherit;
+  font-size: 9.5px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.calendar-weekend {
+  background: #f6f7f5;
+}
+
+.calendar-weekend .calendar-num {
+  color: #9aa59c;
+}
+
+.calendar-fixed {
+  border-color: #b9d4c1;
+  color: var(--green);
+  background: #e6f1e9;
+}
+
+.calendar-optional {
+  border-color: #eadcb9;
+  color: #8a6a2c;
+  background: #fbf6ea;
+}
+
+.calendar-today {
+  box-shadow: inset 0 0 0 2px var(--green);
+}
+
+.plan-leave {
+  border-color: #6c8fd6;
+  color: #2b4a8a;
+  background: #e5edfc;
+}
+
+.plan-sandwich {
+  border-color: #e2998a;
+  color: #9a3b2c;
+  background: repeating-linear-gradient(135deg, #fbe1db, #fbe1db 6px, #fdf0ed 6px, #fdf0ed 12px);
+}
+
+.plan-free {
+  opacity: 0.55;
+}
+
+.calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-top: 14px;
+  color: #6d7d71;
+  font-size: 11px;
+}
+
+.dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 5px;
+  border-radius: 3px;
+  vertical-align: -1px;
+}
+
+.dot-fixed { background: #8fbf9e; }
+.dot-optional { background: #e2c27e; }
+.dot-leave { background: #6c8fd6; }
+.dot-sandwich { background: #e2998a; }
+
+.example-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+  color: #8a968c;
+  font-size: 11px;
+}
+
+.chip-button {
+  padding: 5px 10px;
+  border: 1px solid #dce9df;
+  border-radius: 999px;
+  color: var(--green);
+  background: var(--green-light);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chip-button:hover {
+  border-color: #a9c7b0;
+}
+
+.plan-result {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 10px;
+  background: #f4f7fc;
+}
+
+.plan-total {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.plan-total strong {
+  color: #2b4a8a;
+  font-family: 'Manrope', sans-serif;
+  font-size: 32px;
+  line-height: 1;
+}
+
+.plan-total span {
+  color: #4f5f73;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.plan-line {
+  margin: 8px 0 0;
+  color: #55635a;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.plan-line.plan-sandwich {
+  padding: 6px 9px;
+  border-radius: 7px;
+  background: #fbe1db;
+}
+
+.plan-warning {
+  margin: 8px 0 0;
+  color: #9a3b2c;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.holiday-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.holiday-list li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 7px 0;
+  border-bottom: 1px solid #f0f2ef;
+  font-size: 12px;
+}
+
+.holiday-name {
+  flex: 1;
+  color: #2c3a30;
+  font-weight: 600;
+}
+
+.holiday-date {
+  color: #7e8980;
+  font-size: 11px;
+}
+
+.holiday-remove {
+  margin-left: 6px;
+  padding: 0 4px;
+  border: 0;
+  color: #b0b9b2;
+  background: none;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.holiday-remove:hover {
+  color: #9a3b2c;
+}
+
+@media (max-width: 900px) {
+  .calendar-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .calendar-day {
+    min-height: 48px;
+  }
+
+  .calendar-label {
+    display: none;
+  }
+}

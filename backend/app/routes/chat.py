@@ -7,6 +7,7 @@ from app.db.database import get_db, SessionLocal
 from app.db.models import Conversation, Message, User
 from app.auth.dependencies import get_current_user
 from app.agent.graph import run_agent, stream_agent, HISTORY_MESSAGES
+from app.routes.hr_requests import create_unanswered
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 
@@ -14,6 +15,10 @@ router = APIRouter(prefix="/chat", tags=["chat"])
 class ChatRequest(BaseModel):
     question: str
     conversation_id: int | None = None  # leave empty to start a new chat
+
+
+class FeedbackRequest(BaseModel):
+    value: int  # 1 = helpful, -1 = not helpful, 0 = remove the rating
 
 
 # ---------- Helpers ----------
@@ -33,7 +38,8 @@ def _clean_question(body: ChatRequest) -> str:
 
 
 def _profile(user: User) -> dict:
-    return {"join_date": user.join_date, "grade": user.grade, "city": user.city}
+    return {"join_date": user.join_date, "grade": user.grade, "city": user.city,
+            "department": user.department, "job_title": user.job_title}
 
 
 def _history(db: Session, conversation_id: int | None) -> list[dict]:
@@ -44,7 +50,9 @@ def _history(db: Session, conversation_id: int | None) -> list[dict]:
     return [{"sender": m.sender, "content": m.content} for m in reversed(msgs)]
 
 
-def _save(db: Session, conversation_id: int | None, user_id: int, question: str, result: dict) -> int:
+def _save(db: Session, conversation_id: int | None, user_id: int, question: str,
+          result: dict) -> tuple[int, int]:
+    """Saves the question and answer. Returns (conversation id, answer message id)."""
     if conversation_id:
         conv = _own_conversation(db, conversation_id, user_id)
     else:
@@ -52,10 +60,14 @@ def _save(db: Session, conversation_id: int | None, user_id: int, question: str,
         db.add(conv)
         db.flush()
     db.add(Message(conversation_id=conv.id, sender="user", content=question))
-    db.add(Message(conversation_id=conv.id, sender="assistant",
-                   content=result["answer"], citations=result["citations"]))
+    answer = Message(conversation_id=conv.id, sender="assistant", content=result["answer"],
+                     citations=result["citations"], intent=result.get("intent"))
+    db.add(answer)
+    db.flush()
+    if result["answer"].lower().startswith("this isn't covered"):
+        create_unanswered(db, user_id, question, answer.id)  # HR sees it in the HR Inbox
     db.commit()
-    return conv.id
+    return conv.id, answer.id
 
 
 def _sse(event: str, data: dict) -> str:
@@ -75,8 +87,8 @@ def chat(body: ChatRequest, db: Session = Depends(get_db), user: User = Depends(
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Agent failed: {e}")
 
-    conversation_id = _save(db, body.conversation_id, user.id, question, result)
-    return {"conversation_id": conversation_id, **result}
+    conversation_id, message_id = _save(db, body.conversation_id, user.id, question, result)
+    return {"conversation_id": conversation_id, "message_id": message_id, **result}
 
 
 @router.post("/stream")
@@ -96,8 +108,8 @@ def chat_stream(body: ChatRequest, db: Session = Depends(get_db), user: User = D
                 if kind == "step":
                     yield _sse("step", {"text": payload})
                 else:
-                    conversation_id = _save(session, body.conversation_id, user_id, question, payload)
-                    yield _sse("done", {"conversation_id": conversation_id, **payload})
+                    conversation_id, message_id = _save(session, body.conversation_id, user_id, question, payload)
+                    yield _sse("done", {"conversation_id": conversation_id, "message_id": message_id, **payload})
         except Exception as e:
             session.rollback()
             yield _sse("error", {"detail": f"Agent failed: {e}"})
@@ -125,7 +137,8 @@ def get_conversation(conversation_id: int, db: Session = Depends(get_db),
         "id": conv.id,
         "title": conv.title,
         "messages": [
-            {"sender": m.sender, "content": m.content, "citations": m.citations, "created_at": m.created_at}
+            {"id": m.id, "sender": m.sender, "content": m.content, "citations": m.citations,
+             "feedback": m.feedback, "created_at": m.created_at}
             for m in msgs
         ],
     }
@@ -139,3 +152,18 @@ def delete_conversation(conversation_id: int, db: Session = Depends(get_db),
     db.delete(conv)
     db.commit()
     return {"deleted": conversation_id}
+
+
+@router.post("/messages/{message_id}/feedback")
+def give_feedback(message_id: int, body: FeedbackRequest, db: Session = Depends(get_db),
+                  user: User = Depends(get_current_user)):
+    """Thumbs up / down on an answer. HR sees the results on the Insights page."""
+    msg = db.get(Message, message_id)
+    if msg is None or msg.sender != "assistant":
+        raise HTTPException(status_code=404, detail="Answer not found")
+    _own_conversation(db, msg.conversation_id, user.id)
+    if body.value not in (1, -1, 0):
+        raise HTTPException(status_code=400, detail="value must be 1, -1 or 0")
+    msg.feedback = body.value or None
+    db.commit()
+    return {"message_id": msg.id, "feedback": msg.feedback}

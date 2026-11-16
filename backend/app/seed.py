@@ -18,9 +18,38 @@ log = logging.getLogger("uvicorn.error")
 SEED_DIR = BASE_DIR / "seed_policies"
 
 USERS = [
-    {"email": "hr@company.com", "password": "Admin123", "role": "hr_admin"},
+    {"email": "hr@company.com", "password": "Admin123", "role": "hr_admin",
+     "department": "Human Resources", "job_title": "HR Manager", "city": "Bengaluru",
+     "skills": ["Policy drafting", "Employee relations", "Payroll"]},
     {"email": "emp@company.com", "password": "Emp123", "role": "employee",
-     "join_date": date(2026, 3, 2), "grade": "L3", "city": "Bengaluru"},
+     "join_date": date(2026, 3, 2), "grade": "L3", "city": "Bengaluru",
+     "department": "Engineering", "job_title": "Software Engineer",
+     "skills": ["Python", "React", "SQL"]},
+    # Extra employees so the HR directory and insights have something to show
+    {"email": "ted@company.com", "password": "Emp123", "role": "employee",
+     "department": "Engineering", "job_title": "Solutions Architect",
+     "grade": "L5", "city": "Bengaluru", "join_date": date(2022, 9, 19),
+     "skills": ["System design", "Architecture", "Python"]},
+    {"email": "barney@company.com", "password": "Emp123", "role": "employee",
+     "department": "Sales", "job_title": "Senior Sales Manager",
+     "grade": "L6", "city": "Mumbai", "join_date": date(2020, 2, 3),
+     "skills": ["Negotiation", "Client relations", "Presentations"]},
+    {"email": "robin@company.com", "password": "Emp123", "role": "employee",
+     "department": "Marketing", "job_title": "Communications Manager",
+     "grade": "L4", "city": "Mumbai", "join_date": date(2023, 6, 12),
+     "skills": ["Public speaking", "Media relations", "Content"]},
+    {"email": "lily@company.com", "password": "Emp123", "role": "employee",
+     "department": "Human Resources", "job_title": "Learning & Development Specialist",
+     "grade": "L3", "city": "Bengaluru", "join_date": date(2024, 1, 8),
+     "skills": ["Training", "Onboarding", "Coaching"]},
+    {"email": "marshall@company.com", "password": "Emp123", "role": "employee",
+     "department": "Legal", "job_title": "Legal Counsel",
+     "grade": "L5", "city": "Pune", "join_date": date(2021, 4, 5),
+     "skills": ["Contract law", "Compliance", "Negotiation"]},
+    {"email": "tracy@company.com", "password": "Emp123", "role": "employee",
+     "department": "Finance", "job_title": "Financial Analyst",
+     "grade": "L2", "city": "Bengaluru", "join_date": date(2026, 8, 3),
+     "skills": ["Excel", "Budgeting", "Economics"]},
 ]
 
 # (file, title, version). A second row with the same title uploads a newer version,
@@ -41,9 +70,13 @@ def seed_demo(db) -> None:
     if os.getenv("SEED_DEMO") != "1":
         return
     for u in USERS:
-        if not db.query(User).filter(User.email == u["email"]).first():
-            db.add(User(**{k: v for k, v in u.items() if k != "password"},
-                        password_hash=hash_password(u["password"])))
+        fields = {k: v for k, v in u.items() if k != "password"}
+        existing = db.query(User).filter(User.email == u["email"]).first()
+        if not existing:
+            db.add(User(**fields, password_hash=hash_password(u["password"])))
+        elif not existing.department:  # demo accounts made before departments existed
+            for k in ("department", "job_title", "skills"):
+                setattr(existing, k, fields.get(k))
     db.commit()
 
     if db.query(Document).count():

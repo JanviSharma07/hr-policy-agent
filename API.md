@@ -13,10 +13,13 @@ Authorization: Bearer <access_token>
 
 | Method | Route | Body | Returns |
 |---|---|---|---|
-| POST | `/auth/register` | JSON `{email, password, join_date?, grade?, city?}` (`join_date` as `YYYY-MM-DD`) | the user |
+| POST | `/auth/register` | JSON `{email, password, join_date?, department?, job_title?, city?}` (`join_date` as `YYYY-MM-DD`) | the user |
 | POST | `/auth/login` | **form data** (not JSON): `username` (the email), `password` | `{access_token, token_type, role}` |
-| GET | `/auth/me` | – | `{id, email, role, join_date, grade, city}` |
-| PATCH | `/auth/me` | JSON with any of `{join_date, grade, city}` | the updated user |
+| GET | `/auth/me` | – | `{id, email, role, join_date, department, job_title, skills, city}` (+ `grade` for HR admins only) |
+| PATCH | `/auth/me` | JSON with any of `{job_title, city, skills}` | the updated user |
+| GET | `/auth/departments` | – | list of department names |
+
+The grade is never shown to employees and they can't change it: it decides travel entitlements, so only HR sets it (see `/hr/employees`). Department and joining date are also managed by HR after sign-up.
 
 `role` is `employee` or `hr_admin`. Show the HR documents page only to `hr_admin` (the API blocks employees anyway, with 403).
 
@@ -142,3 +145,46 @@ Errors come back as `{"detail": "message"}`: 400 bad input, 401 not logged in or
 
 - Employee: `emp@company.com` / `Emp123`
 - HR admin: `hr@company.com` / `Admin123`
+
+
+## Answer feedback
+
+| Method | Route | Body | Returns |
+|---|---|---|---|
+| POST | `/chat/messages/{message_id}/feedback` | JSON `{value}`: `1` helpful, `-1` not helpful, `0` remove | `{message_id, feedback}` |
+
+`message_id` comes from the `done` event of `/chat/stream` (and from `/chat`). Messages in `GET /chat/conversations/{id}` now include `id` and `feedback`.
+
+## HR admin: employees and insights (403 for employees)
+
+| Method | Route | Body | Returns |
+|---|---|---|---|
+| GET | `/hr/employees` | – | every user with `grade` and `questions_asked` |
+| PATCH | `/hr/employees/{user_id}` | JSON with any of `{department, job_title, grade, city, join_date, skills}` | the updated user |
+| GET | `/hr/insights` | – | `{totals, by_intent, by_department, unanswered, not_helpful}` |
+
+`unanswered` lists questions that got the "This isn't covered" reply: these are gaps in the policies.
+
+
+## HR Inbox (private questions and questions Humanly couldn't answer)
+
+| Method | Route | Who | Body | Returns |
+|---|---|---|---|---|
+| POST | `/requests` | employee | JSON `{topic, question}` | the request (`kind: "private"`) |
+| GET | `/requests/mine` | employee | – | `{items, unseen}` (unseen = HR replies not read yet) |
+| POST | `/requests/mine/seen` | employee | – | marks replies as read |
+| GET | `/requests?status=&department=` | HR | – | requests with the employee's details |
+| POST | `/requests/{id}/reply` | HR | JSON `{reply, teach}` | the answered request |
+
+When Humanly answers "This isn't covered", a request with `kind: "unanswered"` is created automatically.
+`teach: true` adds the reply to ChromaDB under the document "HR Answers", so the AI can answer that question itself next time. Private requests can never be taught and never reach the AI.
+
+## Holidays
+
+| Method | Route | Who | Body | Returns |
+|---|---|---|---|---|
+| GET | `/holidays` | anyone signed in | – | `[{id, day, name, kind}]` (`kind`: `fixed` or `optional`) |
+| POST | `/holidays` | HR | JSON `{day, name, kind}` | the new holiday |
+| DELETE | `/holidays/{id}` | HR | – | `{deleted}` |
+
+The 2026 list is added on first start and matches section 6 of Holiday Policy 2026.2 (`policy_updates/`).
