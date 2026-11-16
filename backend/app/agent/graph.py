@@ -1,6 +1,6 @@
 import operator
 import re
-from datetime import date
+from datetime import date, timedelta
 from typing import Annotated, Iterator, TypedDict
 from langgraph.graph import StateGraph, START, END
 from app.config import AGENT_RELATIVE_KEEP, OUT_OF_SCOPE_OVERRIDE
@@ -68,6 +68,32 @@ def _profile_text(profile: dict | None) -> str:
     return "Employee profile: " + ("; ".join(parts) if parts else "not provided") + "."
 
 
+def _calendar_text(days: int = 21) -> str:
+    """Today's date plus the next three weeks, with weekends and company holidays marked."""
+    start = date.today()
+    holidays = {}
+    try:
+        from app.db.database import SessionLocal
+        from app.db.models import Holiday
+        with SessionLocal() as db:
+            for h in db.query(Holiday).filter(Holiday.day >= start,
+                                              Holiday.day < start + timedelta(days=days)).all():
+                holidays[h.day] = f"{h.kind} holiday: {h.name}"
+    except Exception:
+        pass  # the calendar still helps without holidays
+
+    lines = []
+    for i in range(days):
+        d = start + timedelta(days=i)
+        note = holidays.get(d) or ("weekend" if d.weekday() >= 5 else "")
+        label = "today" if i == 0 else ""
+        extra = ", ".join(x for x in (label, note) if x)
+        lines.append(f"{d.strftime('%a %d %b %Y')}{f' ({extra})' if extra else ''}")
+    return ("Today is " + start.strftime("%A, %d %B %Y") + ". Calendar for the next 3 weeks "
+            "(use it for dates like \"next weekend\" or \"this Friday\"; do not calculate dates yourself):\n"
+            + "\n".join(lines) + "\n\n")
+
+
 def _excerpt_prompt(state: AgentState, with_profile: bool = False) -> str:
     excerpts = "\n\n".join(
         f"[{i}] {c['metadata']['title']} (version {c['metadata']['version']}, "
@@ -81,8 +107,8 @@ def _excerpt_prompt(state: AgentState, with_profile: bool = False) -> str:
     if history:  # so an answer to an earlier clarifying question isn't lost
         lines = "\n".join(f"{m['sender']}: {m['content']}" for m in history[-4:])
         chat = f"Earlier in this chat (use it for details the employee already gave):\n{lines}\n\n"
-    # Today's date lets agents work out "next weekend", "this Friday" or "from Monday"
-    today = f"Today is {date.today().strftime('%A, %d %B %Y')}.\n\n"
+    # A ready-made calendar, so the model looks dates up instead of calculating them
+    today = _calendar_text()
     return f"Policy excerpts:\n\n{excerpts}\n\n{profile}{chat}{today}Employee question: {state['question']}"
 
 
