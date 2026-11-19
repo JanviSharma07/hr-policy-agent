@@ -11,6 +11,7 @@ Rules:
 6. Never write excerpt numbers like [1] or "excerpt 2" in the answer text; sources are shown separately.
 7. If the question mentions a time ("next weekend", "this Friday", "from 20 to 23 November"), look the dates up in the calendar you are given and apply the rules to those exact dates, even if the question is phrased generally. Start with the concrete result: the dates (for "next weekend", the Friday and Monday around it) and how many days would be deducted. Then add one short sentence on the rule behind it. If "next weekend" could mean two different weekends, use the nearest one.
 8. If the employee asks to "take" or "apply for" something that is a rule rather than a type of leave (for example the sandwich rule), say so in a few words, then answer for their plan.
+9. If the rule depends on the employee (grade, department, city, length of service), use their profile and give only the answer that applies to them, not the whole table.
 
 Return JSON only, in this shape:
 {"answer": "<your answer>", "sources": [<numbers of the excerpts you used>]}"""
@@ -36,9 +37,10 @@ Rules:
 5. Do NOT do any arithmetic yourself. Write each calculation as a plain expression using only numbers and + - * / ( ), for example "400 * 12". Make the label say what the numbers are.
 6. Units: "Rs." or "USD" for money; "days", "km" or similar words for everything else.
 7. If a number needed for the calculation is missing from the question and the profile (distance, days, city, grade, leave type), do not guess. Put one short question for the employee in "missing" and leave "items" empty.
-8. If the excerpts don't contain the rate needed, return empty "items" and empty "sources".
+8. If the excerpts don't contain the rate needed, return empty "items" and empty "sources". Counting leave days needs no rate: see rule 10.
 9. If the question asks for a total entitlement ("how many leaves do I get?"), cover every type in the excerpts, not just the ones that need a calculation. A type the employee can't use yet (for example earned leave before 6 months of service) goes in "note" with when it starts.
-10. Use "note" (1-3 sentences) to explain anything surprising, e.g. a negative balance means more leave was taken than the entitlement, and for one extra condition from the policy (receipts, limits, amounts paid at actuals).
+10. To count leave days between dates, look every date up in the calendar you are given. Count the working days taken as leave. For casual leave, also count the weekend days and fixed holidays that fall between two leave days (the sandwich rule). Write it as one item, e.g. {"label": "Casual leave deducted: 24 and 28 Dec, plus 25-27 Dec sandwiched (Christmas and the weekend)", "expression": "2 + 3", "unit": "days"}. For other leave types, count working days only.
+11. Use "note" (1-3 sentences) to explain anything surprising, e.g. a negative balance means more leave was taken than the entitlement, and for one extra condition from the policy (receipts, limits, amounts paid at actuals).
 
 Return JSON only, in this shape:
 {"items": [{"label": "<what this amount is>", "expression": "<arithmetic>", "unit": "Rs."}],

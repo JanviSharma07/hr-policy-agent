@@ -58,7 +58,8 @@ def _profile_text(profile: dict | None) -> str:
         parts.append(f"joined on {jd.isoformat()}, which is {months_of_service(jd)} full months "
                      f"of service as of {date.today().isoformat()}")
     if profile.get("grade"):
-        parts.append(f"grade {profile['grade']}")
+                # Employees can't see their grade, so agents use it but never write it in the answer
+        parts.append(f"grade {profile['grade']} (confidential: use it, but never mention the grade in the answer)")
     if profile.get("department"):
         parts.append(f"works in the {profile['department']} department")
     if profile.get("job_title"):
@@ -68,29 +69,53 @@ def _profile_text(profile: dict | None) -> str:
     return "Employee profile: " + ("; ".join(parts) if parts else "not provided") + "."
 
 
-def _calendar_text(days: int = 21) -> str:
-    """Today's date plus the next three weeks, with weekends and company holidays marked."""
+MONTHS = ["january", "february", "march", "april", "may", "june", "july",
+          "august", "september", "october", "november", "december"]
+
+
+def _months_in(question: str, today: date) -> list[tuple[int, int]]:
+    """(year, month) for every month named in the question, e.g. "24 and 28 December"."""
+    q = question.lower()
+    found = []
+    for i, name in enumerate(MONTHS, start=1):
+        short = rf"(?:{name}|{name[:3]})"
+        near_number = rf"\b\d{{1,2}}(?:st|nd|rd|th)?\s*(?:of\s+)?{short}\b|\b{short}\.?\s*\d{{1,2}}\b"
+        full_name = name != "may" and re.search(rf"\b{name}\b", q)  # "may" is usually the verb
+        if full_name or re.search(near_number, q):
+            year = today.year if i >= today.month else today.year + 1  # the next time that month comes
+            found.append((year, i))
+    return found
+
+
+def _calendar_text(question: str = "", days: int = 21) -> str:
+    """Today's date, the next three weeks, and every month the question names,
+    with weekends and company holidays marked, so the model looks dates up instead of calculating them."""
     start = date.today()
+    wanted = {start + timedelta(days=i) for i in range(days)}
+    for year, month in _months_in(question, start):
+        d = date(year, month, 1)
+        while d.month == month:
+            wanted.add(d)
+            d += timedelta(days=1)
+    wanted = sorted(wanted)
+
     holidays = {}
     try:
         from app.db.database import SessionLocal
         from app.db.models import Holiday
         with SessionLocal() as db:
-            for h in db.query(Holiday).filter(Holiday.day >= start,
-                                              Holiday.day < start + timedelta(days=days)).all():
+            for h in db.query(Holiday).filter(Holiday.day >= wanted[0], Holiday.day <= wanted[-1]).all():
                 holidays[h.day] = f"{h.kind} holiday: {h.name}"
     except Exception:
         pass  # the calendar still helps without holidays
 
     lines = []
-    for i in range(days):
-        d = start + timedelta(days=i)
+    for d in wanted:
         note = holidays.get(d) or ("weekend" if d.weekday() >= 5 else "")
-        label = "today" if i == 0 else ""
-        extra = ", ".join(x for x in (label, note) if x)
+        extra = ", ".join(x for x in ("today" if d == start else "", note) if x)
         lines.append(f"{d.strftime('%a %d %b %Y')}{f' ({extra})' if extra else ''}")
-    return ("Today is " + start.strftime("%A, %d %B %Y") + ". Calendar for the next 3 weeks "
-            "(use it for dates like \"next weekend\" or \"this Friday\"; do not calculate dates yourself):\n"
+    return ("Today is " + start.strftime("%A, %d %B %Y") + ". Calendar (use it for any date in the question, "
+            "e.g. \"next weekend\" or \"24 December\"; do not calculate dates yourself):\n"
             + "\n".join(lines) + "\n\n")
 
 
@@ -108,7 +133,7 @@ def _excerpt_prompt(state: AgentState, with_profile: bool = False) -> str:
         lines = "\n".join(f"{m['sender']}: {m['content']}" for m in history[-4:])
         chat = f"Earlier in this chat (use it for details the employee already gave):\n{lines}\n\n"
     # A ready-made calendar, so the model looks dates up instead of calculating them
-    today = _calendar_text()
+    today = _calendar_text(state["question"])
     return f"Policy excerpts:\n\n{excerpts}\n\n{profile}{chat}{today}Employee question: {state['question']}"
 
 
@@ -197,7 +222,7 @@ def not_covered(state: AgentState) -> dict:
 
 
 def policy_qa(state: AgentState) -> dict:
-    out = generate_json(QA_SYSTEM, _excerpt_prompt(state), label="policy_qa")
+    out = generate_json(QA_SYSTEM, _excerpt_prompt(state, with_profile=True), label="policy_qa")
     return {
         "answer": str(out.get("answer", "")).strip(),
         "used": out.get("sources", []),
